@@ -3,7 +3,10 @@ from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.common.action_chains import ActionChains
 from pydub import AudioSegment
+import numpy as np
+import scipy.interpolate as si
 import requests, json, sys
 from googleauthenticator import get_mfa
 import os, sys
@@ -28,6 +31,45 @@ chrome_options.add_argument("--disable-dev-shm-usage")
 chrome_options.add_argument("--no-sandbox")
 driver = webdriver.Chrome(executable_path=os.environ.get("CHROMEDRIVER_PATH"), options=chrome_options)
 log_list = []
+
+# Using B-spline for simulate humane like mouse movments
+def human_like_mouse_move(action, start_element):
+    points = [[6, 2], [3, 2],[0, 0], [0, 2]]
+    points = np.array(points)
+    x = points[:,0]
+    y = points[:,1]
+
+    t = range(len(points))
+    ipl_t = np.linspace(0.0, len(points) - 1, 100)
+
+    x_tup = si.splrep(t, x, k=1)
+    y_tup = si.splrep(t, y, k=1)
+
+    x_list = list(x_tup)
+    xl = x.tolist()
+    x_list[1] = xl + [0.0, 0.0, 0.0, 0.0]
+
+    y_list = list(y_tup)
+    yl = y.tolist()
+    y_list[1] = yl + [0.0, 0.0, 0.0, 0.0]
+
+    x_i = si.splev(ipl_t, x_list)
+    y_i = si.splev(ipl_t, y_list)
+
+    startElement = start_element
+
+    action.move_to_element(startElement)
+    action.perform()
+
+    c = 5 # change it for more move
+    i = 0
+    for mouse_x, mouse_y in zip(x_i, y_i):
+        action.move_by_offset(mouse_x,mouse_y)
+        action.perform()
+        i += 1
+        if i == c:
+            break
+
 
 def send_text_message(message):
 
@@ -96,7 +138,12 @@ for index in range(len(allIframesLen)):
     driver.implicitly_wait(10)
     try:
         audioBtn = driver.find_element_by_id('recaptcha-audio-button') or driver.find_element_by_id('recaptcha-anchor')
+        action =  ActionChains(driver)
+        human_like_mouse_move(action, audioBtn)
         audioBtn.click()
+
+        time.sleep(5)
+
         audioBtnFound = True
         audioBtnIndex = index
         break
@@ -135,8 +182,16 @@ if audioBtnFound:
             print("Sending the text result back to captcha")
             try:
                 inputbtn = driver.find_element_by_id('audio-response')
+
+                action =  ActionChains(driver)
+                human_like_mouse_move(action, inputbtn)
+
                 inputbtn.send_keys(response)
                 inputbtn.send_keys(Keys.ENTER)
+
+                log_list.append("Sending the text result back to captcha")
+                log_list.append("------------------")
+                print("Sending the text result back to captcha")
                 
                 time.sleep(2)
                 errorMsg = driver.find_elements_by_class_name('rc-audiochallenge-error-message')[0]
