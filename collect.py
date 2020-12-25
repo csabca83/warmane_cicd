@@ -78,6 +78,7 @@ def saveFile(content,filename):
 driver.get(startpage)
 
 log_list.append("Opened the startpage and now checking the iframes for recaptcha")
+log_list.append("------------------")
 print("Opened the startpage and now checking the iframes for recaptcha")
 
 driver.implicitly_wait(50)
@@ -106,6 +107,7 @@ if audioBtnFound:
     try:
         while True:
             log_list.append("Check audio button")
+            log_list.append("------------------")
             print("Check audio button")
             href = driver.find_element_by_id('audio-source').get_attribute('src')
             response = requests.get(href, stream=True)
@@ -113,6 +115,7 @@ if audioBtnFound:
             saveFile(response,filename)
 
             log_list.append("Converting the mp3 audiofile to wav")
+            log_list.append("------------------")
             print("Converting the mp3 audiofile to wav")
             sound = AudioSegment.from_mp3("test.mp3")
             sound.export("test.wav", format='wav')
@@ -120,6 +123,7 @@ if audioBtnFound:
             response = audioToText("test.wav") #os.getcwd() + '/' + "test.wav")
 
             log_list.append("Text from the response was: " + response)
+            log_list.append("------------------")
             print("Text from the response was: " + response)
 
             driver.switch_to.default_content()
@@ -127,6 +131,7 @@ if audioBtnFound:
             driver.switch_to.frame(iframe)
 
             log_list.append("Sending the text result back to captcha")
+            log_list.append("------------------")
             print("Sending the text result back to captcha")
             try:
                 inputbtn = driver.find_element_by_id('audio-response')
@@ -139,22 +144,27 @@ if audioBtnFound:
                 if errorMsg.text == "" or errorMsg.value_of_css_property('display') == 'none':
 
                     log_list.append("Recaptcha solved")
+                    log_list.append("------------------")
                     print("Recaptcha solved")
                     break
                 try:
                     log_list.append("Captcha's response: " + errorMsg.text)
+                    log_list.append("------------------")
                     print("Captcha's response: " + errorMsg.text)
                 except:
                     log_list.append("Captcha's response: " + errorMsg.value_of_css_property('display'))
+                    log_list.append("------------------")
                     print("Captcha's response: " + errorMsg.value_of_css_property('display'))
             except:
                 log_list.append("Recaptcha solved")
+                log_list.append("------------------")
                 print("Recaptcha solved")
                 break
              
     except Exception as e:
         print(e)
         log_list.append('Recaptcha temporarily banned your IP')
+        log_list.append("------------------")
         print('Recaptcha temporarily banned your IP')
         driver.quit()
         log_list.append("Driver Closed")
@@ -175,6 +185,7 @@ driver.find_element_by_xpath("//button[@type='submit']").click()
 
 print("Added UserID and Password and clicked on login")
 log_list.append("Added UserID and Password and clicked on login")
+log_list.append("------------------")
 driver.implicitly_wait(10)
 
 ##############################
@@ -183,9 +194,11 @@ try:
 
     driver.find_element_by_class_name("wm-ui-btn").click()
     log_list.append("Passed MFA successfully.")
+    log_list.append("------------------")
     print("Passed MFA successfully.")
 except NoSuchElementException:
     log_list.append("MFA wasn't requested")
+    log_list.append("------------------")
     print("MFA wasn't requested")
     pass
 
@@ -195,6 +208,7 @@ try:
     driver.find_element_by_link_text("Collect points").click()
     print("Daily points collected successfully")
     log_list.append("Daily points collected successfully")
+    log_list.append("------------------")
 
 except NoSuchElementException:
     print("Daily points were already collected")
