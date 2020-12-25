@@ -37,6 +37,5 @@ def get_mfa():
 	rel = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 	with open(os.path.join(rel,'secrets.json'), 'r') as f:
 		secrets = json.load(f)
-	for label, key in sorted(list(secrets.items())):
-		label = label
-		return get_totp_token(key)
+
+	return get_totp_token(secrets["mfa"])
