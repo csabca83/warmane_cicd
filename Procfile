@@ -1,1 +1,1 @@
-web: python collect.py
+web: python hello.py
