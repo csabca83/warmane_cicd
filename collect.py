@@ -113,6 +113,7 @@ if audioBtnFound:
                 except:
                     print("Captcha's response: " + errorMsg.value_of_css_property('display'))
             except:
+                print("Recaptcha solved")
                 break
              
     except Exception as e:
