@@ -1,1 +1,1 @@
-web: collect.py
+web: gunicorn -t 150 app:collect
