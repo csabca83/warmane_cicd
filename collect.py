@@ -10,7 +10,7 @@ import scipy.interpolate as si
 import requests, json, sys
 from googleauthenticator import get_mfa
 import os, sys
-import time,requests
+import time,requests, random
 
 with open("secrets.json", "r") as f:
     json_data = json.load(f)
@@ -142,7 +142,7 @@ for index in range(len(allIframesLen)):
         human_like_mouse_move(action, audioBtn)
         audioBtn.click()
 
-        time.sleep(5)
+        time.sleep(random.randint(5, 10))
 
         audioBtnFound = True
         audioBtnIndex = index
@@ -193,7 +193,7 @@ if audioBtnFound:
                 log_list.append("------------------")
                 print("Sending the text result back to captcha")
                 
-                time.sleep(2)
+                time.sleep(random.randint(10, 12))
                 errorMsg = driver.find_elements_by_class_name('rc-audiochallenge-error-message')[0]
 
                 if errorMsg.text == "" or errorMsg.value_of_css_property('display') == 'none':
