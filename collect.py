@@ -172,14 +172,14 @@ if audioBtnFound:
             log_list.append("Text from the response was: " + response)
             log_list.append("------------------")
             print("Text from the response was: " + response)
+            log_list.append("Sending the text result back to captcha")
+            log_list.append("------------------")
+            print("Sending the text result back to captcha")
 
             driver.switch_to.default_content()
             iframe = driver.find_elements_by_tag_name('iframe')[audioBtnIndex]
             driver.switch_to.frame(iframe)
 
-            log_list.append("Sending the text result back to captcha")
-            log_list.append("------------------")
-            print("Sending the text result back to captcha")
             try:
                 inputbtn = driver.find_element_by_id('audio-response')
 
