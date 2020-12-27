@@ -1,4 +1,4 @@
-#!/usr/bin/python
+##!/usr/bin/python
 
 import hmac, base64, struct, hashlib, time, json, os
 
