@@ -188,10 +188,6 @@ if audioBtnFound:
 
                 inputbtn.send_keys(response)
                 inputbtn.send_keys(Keys.ENTER)
-
-                log_list.append("Sending the text result back to captcha")
-                log_list.append("------------------")
-                print("Sending the text result back to captcha")
                 
                 time.sleep(random.randint(10, 12))
                 errorMsg = driver.find_elements_by_class_name('rc-audiochallenge-error-message')[0]
