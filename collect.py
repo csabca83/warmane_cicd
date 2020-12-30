@@ -11,6 +11,7 @@ import requests, json, sys
 from googleauthenticator import get_mfa
 import os, sys
 import time,requests, random
+from fake_useragent import UserAgent
 
 
 class Warmane:
@@ -61,12 +62,18 @@ class Warmane:
             self.get_proxies()
 
     def setup_chrome(self, proxy):
+
+        ua = UserAgent()
+        user_agent = ua.random
+        print(f"Using the following user agent: {user_agent}")
+
         chrome_options = webdriver.ChromeOptions()
         chrome_options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
         chrome_options.add_argument("--headless")
         chrome_options.add_argument("user-agent=Mozilla/5.0 (Windows Phone 10.0; Android 4.2.1; Microsoft; Lumia 640 XL LTE) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Mobile Safari/537.36 Edge/12.10166")
         chrome_options.add_argument("--disable-dev-shm-usage")
         chrome_options.add_argument("--no-sandbox")
+        chrome_options.add_argument(f'user-agent={user_agent}')
         if proxy == 0:
             pass
         else:
