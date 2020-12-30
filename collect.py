@@ -65,7 +65,7 @@ class Warmane:
 
         ua = UserAgent()
         user_agent = ua.random
-        print(f"Using the following user agent: {user_agent}")
+        #print(f"Using the following user agent: {user_agent}")
 
         chrome_options = webdriver.ChromeOptions()
         chrome_options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
@@ -80,7 +80,7 @@ class Warmane:
             chrome_options.add_argument(f'--proxy-server={proxy}')
 
         driver = webdriver.Chrome(executable_path=os.environ.get("CHROMEDRIVER_PATH"), options=chrome_options)
-        driver.set_page_load_timeout(30)
+        driver.set_page_load_timeout(60)
 
         self.driver = driver
 
