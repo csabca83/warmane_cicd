@@ -7,10 +7,10 @@ from selenium.webdriver.common.action_chains import ActionChains
 from pydub import AudioSegment
 import numpy as np
 import scipy.interpolate as si
-import requests, json, sys
+import json, sys
 from googleauthenticator import get_mfa
 import os, sys
-import time,requests, random
+import time, requests, random, pickle
 from fake_useragent import UserAgent
 
 
@@ -28,9 +28,28 @@ class Warmane:
         self.psid = json_data["CSABI"]
         self.fb_api_url = 'https://graph.facebook.com/v8.0/me/'
         self.filename = 'test.mp3'
+        self.google_startpage = "https://www.google.com/"
         self.startpage = 'https://www.warmane.com/account/login'
         self.log_list = []
         self.proxy = 0
+        self.cookies = "cookies.txt"
+        self.cookie_worked = False
+
+    def save_cookies(self):
+
+        pickle.dump(self.driver.get_cookies(), open(self.cookies, "wb"))
+
+
+    def load_cookies(self, url=None):
+
+        cookies = pickle.load(open(self.cookies, "rb"))
+        self.driver.delete_all_cookies()
+        # have to be on a page before you can add any cookies, any page - does not matter which
+        self.driver.get("https://google.com" if url is None else url)
+        for cookie in cookies:
+            if isinstance(cookie.get('expiry'), float):#Checks if the instance expiry a float 
+                cookie['expiry'] = int(cookie['expiry'])# it converts expiry cookie to a int 
+            self.driver.add_cookie(cookie)
 
     def get_proxies(self):
 
@@ -70,7 +89,6 @@ class Warmane:
         chrome_options = webdriver.ChromeOptions()
         chrome_options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
         chrome_options.add_argument("--headless")
-        #chrome_options.add_argument("user-agent=Mozilla/5.0 (Windows Phone 10.0; Android 4.2.1; Microsoft; Lumia 640 XL LTE) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Mobile Safari/537.36 Edge/12.10166")
         chrome_options.add_argument("--disable-dev-shm-usage")
         chrome_options.add_argument("--no-sandbox")
         chrome_options.add_argument(f'user-agent={user_agent}')
@@ -171,128 +189,146 @@ class Warmane:
     def captcha(self):
         
         try:
+            self.driver.get(self.google_startpage)
+            try:
+                self.load_cookies()
+            except:
+                pass
+            time.sleep(2)
             self.driver.get(self.startpage)
+            try:
+                self.driver.find_element_by_id("userID")
+            except:
+                print("Cookies were loaded up successfully")
+                self.cookie_worked = True
+            
+            if self.cookie_worked == True:
+                pass
+            else:
 
-            print("Opened the startpage and now checking the iframes for recaptcha")
+                print("Opened the startpage and now checking the iframes for recaptcha")
 
-            self.driver.implicitly_wait(30)
-            outeriframe = self.driver.find_element_by_tag_name('iframe')
-            outeriframe.click()
+                self.driver.implicitly_wait(30)
+                outeriframe = self.driver.find_element_by_tag_name('iframe')
+                outeriframe.click()
+
+
+                allIframesLen = self.driver.find_elements_by_tag_name('iframe')
+                audioBtnFound = False
+                audioBtnIndex = -1
+
+                for index in range(len(allIframesLen)):
+                    self.driver.switch_to.default_content()
+                    iframe = self.driver.find_elements_by_tag_name('iframe')[index]
+                    self.driver.switch_to.frame(iframe)
+                    self.driver.implicitly_wait(10)
+                    try:
+                        audioBtn = self.driver.find_element_by_id('recaptcha-audio-button') or self.driver.find_element_by_id('recaptcha-anchor')
+                        action =  ActionChains(self.driver)
+                        self.human_like_mouse_move(action, audioBtn)
+                        audioBtn.click()
+
+                        time.sleep(random.randint(5, 10))
+
+                        audioBtnFound = True
+                        audioBtnIndex = index
+                        break
+                    except Exception as e:
+                        pass
+
+                if audioBtnFound:
+                    try:
+                        while True:
+                            print("Check audio button")
+                            href = self.driver.find_element_by_id('audio-source').get_attribute('src')
+                            response = requests.get(href, stream=True)
+
+                            self.saveFile(response)
+
+
+                            print("Converting the mp3 audiofile to wav")
+                            sound = AudioSegment.from_mp3("test.mp3")
+                            sound.export("test.wav", format='wav')
+
+                            response = self.audioToText("test.wav") #os.getcwd() + '/' + "test.wav")
+
+                            print("Text from the response was: " + response)
+                            print("Sending the text result back to captcha")
+
+                            self.driver.switch_to.default_content()
+                            iframe = self.driver.find_elements_by_tag_name('iframe')[audioBtnIndex]
+                            self.driver.switch_to.frame(iframe)
+
+                            try:
+                                inputbtn = self.driver.find_element_by_id('audio-response')
+
+                                action =  ActionChains(self.driver)
+                                self.human_like_mouse_move(action, inputbtn)
+
+                                inputbtn.send_keys(response)
+                                inputbtn.send_keys(Keys.ENTER)
+                                
+                                time.sleep(random.randint(10, 12))
+                                errorMsg = self.driver.find_elements_by_class_name('rc-audiochallenge-error-message')[0]
+
+                                if errorMsg.text == "" or errorMsg.value_of_css_property('display') == 'none':
+
+                                    print("Recaptcha solved")
+                                    break
+                                try:
+                                    print("Captcha's response: " + errorMsg.text)
+                                except:
+                                    print("Captcha's response: " + errorMsg.value_of_css_property('display'))
+                            except:
+                                print("Recaptcha solved")
+                                break
+                            
+                    except Exception as e:
+                        print(e)
+                        print('Recaptcha temporarily banned your IP')
+                        self.driver.quit()
+                        print("Driver Closed")
+                        proxy = self.get_proxies()
+                        self.setup_chrome(proxy)
+                        self.captcha()
+                else:
+                    print('Button not found.')
+                    #self.send_text_message(log_list)
+                    self.driver.quit()
+                    proxy = self.get_proxies()
+                    self.setup_chrome(proxy)
+                    self.captcha()
         except:
             self.driver.quit()
             proxy = self.get_proxies()
             self.setup_chrome(proxy)
-            self.captcha()
-
-
-        allIframesLen = self.driver.find_elements_by_tag_name('iframe')
-        audioBtnFound = False
-        audioBtnIndex = -1
-
-        for index in range(len(allIframesLen)):
-            self.driver.switch_to.default_content()
-            iframe = self.driver.find_elements_by_tag_name('iframe')[index]
-            self.driver.switch_to.frame(iframe)
-            self.driver.implicitly_wait(10)
-            try:
-                audioBtn = self.driver.find_element_by_id('recaptcha-audio-button') or self.driver.find_element_by_id('recaptcha-anchor')
-                action =  ActionChains(self.driver)
-                self.human_like_mouse_move(action, audioBtn)
-                audioBtn.click()
-
-                time.sleep(random.randint(5, 10))
-
-                audioBtnFound = True
-                audioBtnIndex = index
-                break
-            except Exception as e:
-                pass
-
-        if audioBtnFound:
-            try:
-                while True:
-                    print("Check audio button")
-                    href = self.driver.find_element_by_id('audio-source').get_attribute('src')
-                    response = requests.get(href, stream=True)
-
-                    self.saveFile(response)
-
-
-                    print("Converting the mp3 audiofile to wav")
-                    sound = AudioSegment.from_mp3("test.mp3")
-                    sound.export("test.wav", format='wav')
-
-                    response = self.audioToText("test.wav") #os.getcwd() + '/' + "test.wav")
-
-                    print("Text from the response was: " + response)
-                    print("Sending the text result back to captcha")
-
-                    self.driver.switch_to.default_content()
-                    iframe = self.driver.find_elements_by_tag_name('iframe')[audioBtnIndex]
-                    self.driver.switch_to.frame(iframe)
-
-                    try:
-                        inputbtn = self.driver.find_element_by_id('audio-response')
-
-                        action =  ActionChains(self.driver)
-                        self.human_like_mouse_move(action, inputbtn)
-
-                        inputbtn.send_keys(response)
-                        inputbtn.send_keys(Keys.ENTER)
-                        
-                        time.sleep(random.randint(10, 12))
-                        errorMsg = self.driver.find_elements_by_class_name('rc-audiochallenge-error-message')[0]
-
-                        if errorMsg.text == "" or errorMsg.value_of_css_property('display') == 'none':
-
-                            print("Recaptcha solved")
-                            break
-                        try:
-                            print("Captcha's response: " + errorMsg.text)
-                        except:
-                            print("Captcha's response: " + errorMsg.value_of_css_property('display'))
-                    except:
-                        print("Recaptcha solved")
-                        break
-                    
-            except Exception as e:
-                print(e)
-                print('Recaptcha temporarily banned your IP')
-                self.driver.quit()
-                print("Driver Closed")
-                proxy = self.get_proxies()
-                self.setup_chrome(proxy)
-                self.captcha()
-        else:
-            print('Button not found.')
-            #self.send_text_message(log_list)
-            self.driver.quit()
-            proxy = self.get_proxies()
-            self.setup_chrome(proxy)
-            self.captcha()
+            self.captcha()         
 
     def run_page(self):
 
         self.captcha()
 
-        self.driver.switch_to.default_content()
-
-        self.driver.find_element_by_id("userID").send_keys(self.warmane_acc)
-        self.driver.find_element_by_id("userPW").send_keys(self.warmane_pass)
-        self.driver.find_element_by_xpath("//button[@type='submit']").click()
-
-        print("Added UserID and Password and clicked on login")
-        self.driver.implicitly_wait(10)
-
-        ##############################
-        try:
-            self.driver.find_element_by_id("authCode").send_keys(f"{get_mfa()}")
-
-            self.driver.find_element_by_class_name("wm-ui-btn").click()
-            print("Passed MFA successfully.")
-        except NoSuchElementException:
-            print("MFA wasn't requested")
+        if self.cookie_worked == True:
             pass
+        else:
+            self.driver.switch_to.default_content()
+
+            self.driver.find_element_by_id("userID").send_keys(self.warmane_acc)
+            self.driver.find_element_by_id("userPW").send_keys(self.warmane_pass)
+            self.driver.find_element_by_xpath("//button[@type='submit']").click()
+
+            print("Added UserID and Password and clicked on login")
+            self.driver.implicitly_wait(10)
+
+            ##############################
+            try:
+                self.driver.find_element_by_id("authCode").send_keys(f"{get_mfa()}")
+
+                self.driver.find_element_by_class_name("wm-ui-btn").click()
+                print("Passed MFA successfully.")
+            except NoSuchElementException:
+                print("MFA wasn't requested")
+                pass
 
         self.driver.implicitly_wait(10)
 
@@ -316,6 +352,7 @@ class Warmane:
         print("Successful script run")
         self.log_list.append("Successful script run")
         self.send_text_message(self.log_list)
+        self.save_cookies()
 
         self.driver.quit()
 
