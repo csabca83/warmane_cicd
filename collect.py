@@ -175,7 +175,7 @@ class Warmane:
 
             print("Opened the startpage and now checking the iframes for recaptcha")
 
-            self.driver.implicitly_wait(5)
+            self.driver.implicitly_wait(30)
             outeriframe = self.driver.find_element_by_tag_name('iframe')
             outeriframe.click()
         except:
