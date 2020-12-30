@@ -1,5 +1,5 @@
-
 from selenium import webdriver
+from bs4 import BeautifulSoup
 from selenium.webdriver.common.keys import Keys
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.common.exceptions import NoSuchElementException
@@ -12,268 +12,307 @@ from googleauthenticator import get_mfa
 import os, sys
 import time,requests, random
 
-with open("secrets.json", "r") as f:
-    json_data = json.load(f)
 
-wittoken = json_data["wittoken"]
-warmane_acc = json_data["warmane_acc"]
-warmane_pass = json_data["warmane_pass"]
-access_token = json_data["ACCESS_TOKEN"]
-psid = json_data["CSABI"]
-fb_api_url = 'https://graph.facebook.com/v8.0/me/'
-filename = 'test.mp3'
-startpage = 'https://www.warmane.com/account/login'
+class Warmane:
 
-chrome_options = webdriver.ChromeOptions()
-chrome_options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
-chrome_options.add_argument("--headless")
-chrome_options.add_argument("--disable-dev-shm-usage")
-chrome_options.add_argument("--no-sandbox")
-driver = webdriver.Chrome(executable_path=os.environ.get("CHROMEDRIVER_PATH"), options=chrome_options)
-log_list = []
+    def __init__(self):
 
-# Using B-spline for simulate humane like mouse movments
-def human_like_mouse_move(action, start_element):
-    points = [[6, 2], [3, 2],[0, 0], [0, 2]]
-    points = np.array(points)
-    x = points[:,0]
-    y = points[:,1]
+        with open("secrets.json", "r") as f:
+            json_data = json.load(f)
 
-    t = range(len(points))
-    ipl_t = np.linspace(0.0, len(points) - 1, 100)
+        self.wittoken = json_data["wittoken"]
+        self.warmane_acc = json_data["warmane_acc"]
+        self.warmane_pass = json_data["warmane_pass"]
+        self.access_token = json_data["ACCESS_TOKEN"]
+        self.psid = json_data["CSABI"]
+        self.fb_api_url = 'https://graph.facebook.com/v8.0/me/'
+        self.filename = 'test.mp3'
+        self.startpage = 'https://www.warmane.com/account/login'
+        self.log_list = []
+        self.proxy = 0
 
-    x_tup = si.splrep(t, x, k=1)
-    y_tup = si.splrep(t, y, k=1)
+    def get_proxies(self):
 
-    x_list = list(x_tup)
-    xl = x.tolist()
-    x_list[1] = xl + [0.0, 0.0, 0.0, 0.0]
+        try:
+            proxy_listed = []
+            res = requests.get('https://free-proxy-list.net/', headers={'User-Agent':'Mozilla/5.0'})
+            soup = BeautifulSoup(res.text,"lxml")
+            for items in soup.select("#proxylisttable tbody tr"):
 
-    y_list = list(y_tup)
-    yl = y.tolist()
-    y_list[1] = yl + [0.0, 0.0, 0.0, 0.0]
+                for item in items.select("td", class_="hx sorting_1")[::6]:
+                    if "yes" in item.text:
+                        proxy_list = ':'.join([item.text for item in items.select("td")[:2]])
+                        proxy_listed.append(proxy_list)
 
-    x_i = si.splev(ipl_t, x_list)
-    y_i = si.splev(ipl_t, y_list)
+                    else:
+                        pass
+            ip_range = len(proxy_listed)
 
-    startElement = start_element
+            random_proxy = random.randint(0, ip_range)
 
-    action.move_to_element(startElement)
-    action.perform()
+            selected_proxy = proxy_listed[random_proxy]
 
-    c = 5 # change it for more move
-    i = 0
-    for mouse_x, mouse_y in zip(x_i, y_i):
-        action.move_by_offset(mouse_x,mouse_y)
+            print(f"The following proxy were selected: {selected_proxy}")
+
+            return selected_proxy
+
+        except:
+            time.sleep(10)
+            self.get_proxies()
+
+    def setup_chrome(self, proxy):
+        chrome_options = webdriver.ChromeOptions()
+        chrome_options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
+        chrome_options.add_argument("--headless")
+        chrome_options.add_argument("user-agent=Mozilla/5.0 (Windows Phone 10.0; Android 4.2.1; Microsoft; Lumia 640 XL LTE) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Mobile Safari/537.36 Edge/12.10166")
+        chrome_options.add_argument("--disable-dev-shm-usage")
+        chrome_options.add_argument("--no-sandbox")
+        if proxy == 0:
+            pass
+        else:
+            chrome_options.add_argument(f'--proxy-server={proxy}')
+
+        driver = webdriver.Chrome(executable_path=os.environ.get("CHROMEDRIVER_PATH"), options=chrome_options)
+        driver.set_page_load_timeout(30)
+
+        self.driver = driver
+
+    # Using B-spline for simulate humane like mouse movments
+    def human_like_mouse_move(self, action, start_element):
+        points = [[6, 2], [3, 2],[0, 0], [0, 2]]
+        points = np.array(points)
+        x = points[:,0]
+        y = points[:,1]
+
+        t = range(len(points))
+        ipl_t = np.linspace(0.0, len(points) - 1, 100)
+
+        x_tup = si.splrep(t, x, k=1)
+        y_tup = si.splrep(t, y, k=1)
+
+        x_list = list(x_tup)
+        xl = x.tolist()
+        x_list[1] = xl + [0.0, 0.0, 0.0, 0.0]
+
+        y_list = list(y_tup)
+        yl = y.tolist()
+        y_list[1] = yl + [0.0, 0.0, 0.0, 0.0]
+
+        x_i = si.splev(ipl_t, x_list)
+        y_i = si.splev(ipl_t, y_list)
+
+        startElement = start_element
+
+        action.move_to_element(startElement)
         action.perform()
-        i += 1
-        if i == c:
-            break
 
-
-def send_text_message(message):
-
-    message = ('\n'.join(map(str, message)))
-
-    headers = {
-        'Content-Type': 'application/json'
-    }
-
-    data = {
-        'messaging_type': 'RESPONSE',
-        'recipient': {'id': psid},
-        'message': {'text': message}
-    }
-
-    params = {'access_token': access_token}
-    api_url = fb_api_url + 'messages'
-    response = requests.post(api_url, headers=headers, params=params, data=json.dumps(data))
-
-    print(response.content)
-    print(data)
-
-def audioToText(wavaudiofilename):
-
-    url = 'https://api.wit.ai/speech'
-    headers = {
-        'Authorization': f'Bearer {wittoken}',
-        'Content-Type': 'audio/wav',
-    }
-
-    params = (
-        ('v', '20200513'),
-    )
-
-    data = open(wavaudiofilename, 'rb').read()
-    response = requests.post(url, headers=headers, params=params, data=data)
-
-    json_data = response.json()
-
-    return json_data["text"]
-
-def saveFile(content,filename):
-    with open(filename, "wb") as handle:
-        for data in content.iter_content():
-            handle.write(data)
-
-
-driver.get(startpage)
-
-log_list.append("Opened the startpage and now checking the iframes for recaptcha")
-log_list.append("------------------")
-print("Opened the startpage and now checking the iframes for recaptcha")
-
-driver.implicitly_wait(50)
-outeriframe = driver.find_element_by_tag_name('iframe')
-outeriframe.click()
-
-allIframesLen = driver.find_elements_by_tag_name('iframe')
-audioBtnFound = False
-audioBtnIndex = -1
-
-for index in range(len(allIframesLen)):
-    driver.switch_to.default_content()
-    iframe = driver.find_elements_by_tag_name('iframe')[index]
-    driver.switch_to.frame(iframe)
-    driver.implicitly_wait(10)
-    try:
-        audioBtn = driver.find_element_by_id('recaptcha-audio-button') or driver.find_element_by_id('recaptcha-anchor')
-        action =  ActionChains(driver)
-        human_like_mouse_move(action, audioBtn)
-        audioBtn.click()
-
-        time.sleep(random.randint(5, 10))
-
-        audioBtnFound = True
-        audioBtnIndex = index
-        break
-    except Exception as e:
-        pass
-
-if audioBtnFound:
-    try:
-        while True:
-            log_list.append("Check audio button")
-            log_list.append("------------------")
-            print("Check audio button")
-            href = driver.find_element_by_id('audio-source').get_attribute('src')
-            response = requests.get(href, stream=True)
-
-            saveFile(response,filename)
-
-            log_list.append("Converting the mp3 audiofile to wav")
-            log_list.append("------------------")
-            print("Converting the mp3 audiofile to wav")
-            sound = AudioSegment.from_mp3("test.mp3")
-            sound.export("test.wav", format='wav')
-
-            response = audioToText("test.wav") #os.getcwd() + '/' + "test.wav")
-
-            log_list.append("Text from the response was: " + response)
-            log_list.append("------------------")
-            print("Text from the response was: " + response)
-            log_list.append("Sending the text result back to captcha")
-            log_list.append("------------------")
-            print("Sending the text result back to captcha")
-
-            driver.switch_to.default_content()
-            iframe = driver.find_elements_by_tag_name('iframe')[audioBtnIndex]
-            driver.switch_to.frame(iframe)
-
-            try:
-                inputbtn = driver.find_element_by_id('audio-response')
-
-                action =  ActionChains(driver)
-                human_like_mouse_move(action, inputbtn)
-
-                inputbtn.send_keys(response)
-                inputbtn.send_keys(Keys.ENTER)
-                
-                time.sleep(random.randint(10, 12))
-                errorMsg = driver.find_elements_by_class_name('rc-audiochallenge-error-message')[0]
-
-                if errorMsg.text == "" or errorMsg.value_of_css_property('display') == 'none':
-
-                    log_list.append("Recaptcha solved")
-                    log_list.append("------------------")
-                    print("Recaptcha solved")
-                    break
-                try:
-                    log_list.append("Captcha's response: " + errorMsg.text)
-                    log_list.append("------------------")
-                    print("Captcha's response: " + errorMsg.text)
-                except:
-                    log_list.append("Captcha's response: " + errorMsg.value_of_css_property('display'))
-                    log_list.append("------------------")
-                    print("Captcha's response: " + errorMsg.value_of_css_property('display'))
-            except:
-                log_list.append("Recaptcha solved")
-                log_list.append("------------------")
-                print("Recaptcha solved")
+        c = 5 # change it for more move
+        i = 0
+        for mouse_x, mouse_y in zip(x_i, y_i):
+            action.move_by_offset(mouse_x,mouse_y)
+            action.perform()
+            i += 1
+            if i == c:
                 break
-             
-    except Exception as e:
-        print(e)
-        log_list.append('Recaptcha temporarily banned your IP')
-        log_list.append("------------------")
-        print('Recaptcha temporarily banned your IP')
-        driver.quit()
-        log_list.append("Driver Closed")
-        print("Driver Closed")
-        send_text_message(log_list)
-        sys.exit()
-else:
-    print('Button not found.')
-    send_text_message(log_list)
-    driver.quit()
-    sys.exit()
 
-driver.switch_to.default_content()
 
-driver.find_element_by_id("userID").send_keys(warmane_acc)
-driver.find_element_by_id("userPW").send_keys(warmane_pass)
-driver.find_element_by_xpath("//button[@type='submit']").click()
+    def send_text_message(self, message):
 
-print("Added UserID and Password and clicked on login")
-log_list.append("Added UserID and Password and clicked on login")
-log_list.append("------------------")
-driver.implicitly_wait(10)
+        message = ('\n'.join(map(str, message)))
 
-##############################
-try:
-    driver.find_element_by_id("authCode").send_keys(f"{get_mfa()}")
+        headers = {
+            'Content-Type': 'application/json'
+        }
 
-    driver.find_element_by_class_name("wm-ui-btn").click()
-    log_list.append("Passed MFA successfully.")
-    log_list.append("------------------")
-    print("Passed MFA successfully.")
-except NoSuchElementException:
-    log_list.append("MFA wasn't requested")
-    log_list.append("------------------")
-    print("MFA wasn't requested")
-    pass
+        data = {
+            'messaging_type': 'RESPONSE',
+            'recipient': {'id': self.psid},
+            'message': {'text': message}
+        }
 
-driver.implicitly_wait(10)
+        params = {'access_token': self.access_token}
+        api_url = self.fb_api_url + 'messages'
+        response = requests.post(api_url, headers=headers, params=params, data=json.dumps(data))
 
-try:
-    driver.find_element_by_link_text("Collect points").click()
-    print("Daily points collected successfully")
-    log_list.append("Daily points collected successfully")
-    log_list.append("------------------")
+        print(response.content)
+        print(data)
 
-except NoSuchElementException:
-    print("Daily points were already collected")
-    log_list.append("Daily points were already collected")
+    def audioToText(self, wavaudiofilename):
 
-except:
-    print("!!!Something went wrong!!!")
-    log_list.append("!!!Something went wrong!!!")
-    send_text_message(log_list)
-    driver.quit()
-    sys.exit()
+        url = 'https://api.wit.ai/speech'
+        headers = {
+            'Authorization': f'Bearer {self.wittoken}',
+            'Content-Type': 'audio/wav',
+        }
 
-print("Successful script run")
-log_list.append("Successful script run")
-send_text_message(log_list)
+        params = (
+            ('v', '20200513'),
+        )
 
-driver.quit()
+        data = open(wavaudiofilename, 'rb').read()
+        response = requests.post(url, headers=headers, params=params, data=data)
+
+        json_data = response.json()
+
+        return json_data["text"]
+
+    def saveFile(self, content):
+        with open(self.filename, "wb") as handle:
+            for data in content.iter_content():
+                handle.write(data)
+
+    def captcha(self):
+        
+        try:
+            self.driver.get(self.startpage)
+
+            print("Opened the startpage and now checking the iframes for recaptcha")
+
+            self.driver.implicitly_wait(5)
+            outeriframe = self.driver.find_element_by_tag_name('iframe')
+            outeriframe.click()
+        except:
+            self.driver.quit()
+            proxy = self.get_proxies()
+            self.setup_chrome(proxy)
+            self.captcha()
+
+
+        allIframesLen = self.driver.find_elements_by_tag_name('iframe')
+        audioBtnFound = False
+        audioBtnIndex = -1
+
+        for index in range(len(allIframesLen)):
+            self.driver.switch_to.default_content()
+            iframe = self.driver.find_elements_by_tag_name('iframe')[index]
+            self.driver.switch_to.frame(iframe)
+            self.driver.implicitly_wait(10)
+            try:
+                audioBtn = self.driver.find_element_by_id('recaptcha-audio-button') or self.driver.find_element_by_id('recaptcha-anchor')
+                action =  ActionChains(self.driver)
+                self.human_like_mouse_move(action, audioBtn)
+                audioBtn.click()
+
+                time.sleep(random.randint(5, 10))
+
+                audioBtnFound = True
+                audioBtnIndex = index
+                break
+            except Exception as e:
+                pass
+
+        if audioBtnFound:
+            try:
+                while True:
+                    print("Check audio button")
+                    href = self.driver.find_element_by_id('audio-source').get_attribute('src')
+                    response = requests.get(href, stream=True)
+
+                    self.saveFile(response)
+
+
+                    print("Converting the mp3 audiofile to wav")
+                    sound = AudioSegment.from_mp3("test.mp3")
+                    sound.export("test.wav", format='wav')
+
+                    response = self.audioToText("test.wav") #os.getcwd() + '/' + "test.wav")
+
+                    print("Text from the response was: " + response)
+                    print("Sending the text result back to captcha")
+
+                    self.driver.switch_to.default_content()
+                    iframe = self.driver.find_elements_by_tag_name('iframe')[audioBtnIndex]
+                    self.driver.switch_to.frame(iframe)
+
+                    try:
+                        inputbtn = self.driver.find_element_by_id('audio-response')
+
+                        action =  ActionChains(self.driver)
+                        self.human_like_mouse_move(action, inputbtn)
+
+                        inputbtn.send_keys(response)
+                        inputbtn.send_keys(Keys.ENTER)
+                        
+                        time.sleep(random.randint(10, 12))
+                        errorMsg = self.driver.find_elements_by_class_name('rc-audiochallenge-error-message')[0]
+
+                        if errorMsg.text == "" or errorMsg.value_of_css_property('display') == 'none':
+
+                            print("Recaptcha solved")
+                            break
+                        try:
+                            print("Captcha's response: " + errorMsg.text)
+                        except:
+                            print("Captcha's response: " + errorMsg.value_of_css_property('display'))
+                    except:
+                        print("Recaptcha solved")
+                        break
+                    
+            except Exception as e:
+                print(e)
+                print('Recaptcha temporarily banned your IP')
+                self.driver.quit()
+                print("Driver Closed")
+                proxy = self.get_proxies()
+                self.setup_chrome(proxy)
+                self.captcha()
+        else:
+            print('Button not found.')
+            #self.send_text_message(log_list)
+            self.driver.quit()
+            proxy = self.get_proxies()
+            self.setup_chrome(proxy)
+            self.captcha()
+
+    def run_page(self):
+
+        self.captcha()
+
+        self.driver.switch_to.default_content()
+
+        self.driver.find_element_by_id("userID").send_keys(self.warmane_acc)
+        self.driver.find_element_by_id("userPW").send_keys(self.warmane_pass)
+        self.driver.find_element_by_xpath("//button[@type='submit']").click()
+
+        print("Added UserID and Password and clicked on login")
+        self.driver.implicitly_wait(10)
+
+        ##############################
+        try:
+            self.driver.find_element_by_id("authCode").send_keys(f"{get_mfa()}")
+
+            self.driver.find_element_by_class_name("wm-ui-btn").click()
+            print("Passed MFA successfully.")
+        except NoSuchElementException:
+            print("MFA wasn't requested")
+            pass
+
+        self.driver.implicitly_wait(10)
+
+        try:
+            self.driver.find_element_by_link_text("Collect points").click()
+            print("Daily points collected successfully")
+            self.log_list.append("Daily points collected successfully")
+            self.log_list.append("------------------")
+        except NoSuchElementException:
+            print("Daily points were already collected")
+            self.log_list.append("Daily points were already collected")
+            self.log_list.append("------------------")
+
+        except:
+            print("!!!Something went wrong!!!")
+            self.log_list.append("!!!Something went wrong!!!")
+            self.send_text_message(self.log_list)
+            self.driver.quit()
+            sys.exit()
+
+        print("Successful script run")
+        self.log_list.append("Successful script run")
+        self.send_text_message(self.log_list)
+
+        self.driver.quit()
+
+if __name__ == "__main__":
+    b = Warmane()
+    b.setup_chrome(0)
+    b.run_page()
