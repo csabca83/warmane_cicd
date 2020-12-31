@@ -196,6 +196,8 @@ class Warmane:
                 pass
             time.sleep(2)
             self.driver.get(self.startpage)
+            time.sleep(2)
+            self.driver.get(self.startpage)
             try:
                 self.driver.find_element_by_id("userID")
             except:
