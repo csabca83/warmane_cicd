@@ -9,7 +9,7 @@ import numpy as np
 import scipy.interpolate as si
 import json, sys
 from googleauthenticator import get_mfa
-import os, sys
+import os, sys, boto3
 import time, requests, random, pickle
 from fake_useragent import UserAgent
 
@@ -26,6 +26,8 @@ class Warmane:
         self.warmane_pass = json_data["warmane_pass"]
         self.access_token = json_data["ACCESS_TOKEN"]
         self.psid = json_data["CSABI"]
+        self.ack = json_data["ACK"]
+        self.sck = json_data["SCK"]
         self.fb_api_url = 'https://graph.facebook.com/v8.0/me/'
         self.filename = 'test.mp3'
         self.google_startpage = "https://www.google.com/"
@@ -34,13 +36,22 @@ class Warmane:
         self.proxy = 0
         self.cookies = "cookies.txt"
         self.cookie_worked = False
+        self.s3 = boto3.resource('s3', aws_access_key_id = self.ack, aws_secret_access_key = self.sck)
+        self.obj = self.s3.Object('bucket-for-cookies','cookies.txt')
 
     def save_cookies(self):
 
         pickle.dump(self.driver.get_cookies(), open(self.cookies, "wb"))
 
+        with open('cookies.txt', 'rb') as data:
+            self.obj.upload_fileobj(data)
+
 
     def load_cookies(self, url=None):
+
+        with open('cookies.txt', 'wb') as data:
+            self.obj.download_fileobj(data)
+        self.obj.delete()
 
         cookies = pickle.load(open(self.cookies, "rb"))
         self.driver.delete_all_cookies()
@@ -89,6 +100,7 @@ class Warmane:
         chrome_options = webdriver.ChromeOptions()
         chrome_options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
         chrome_options.add_argument("--headless")
+        #chrome_options.add_argument("user-agent=Mozilla/5.0 (Windows Phone 10.0; Android 4.2.1; Microsoft; Lumia 640 XL LTE) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Mobile Safari/537.36 Edge/12.10166")
         chrome_options.add_argument("--disable-dev-shm-usage")
         chrome_options.add_argument("--no-sandbox")
         chrome_options.add_argument(f'user-agent={user_agent}')
@@ -98,7 +110,7 @@ class Warmane:
             chrome_options.add_argument(f'--proxy-server={proxy}')
 
         driver = webdriver.Chrome(executable_path=os.environ.get("CHROMEDRIVER_PATH"), options=chrome_options)
-        driver.set_page_load_timeout(60)
+        driver.set_page_load_timeout(120)
 
         self.driver = driver
 
@@ -186,7 +198,7 @@ class Warmane:
             for data in content.iter_content():
                 handle.write(data)
 
-    def captcha(self):
+    def captcha(self, n):
         
         try:
             self.driver.get(self.google_startpage)
@@ -194,8 +206,6 @@ class Warmane:
                 self.load_cookies()
             except:
                 pass
-            time.sleep(2)
-            self.driver.get(self.startpage)
             time.sleep(2)
             self.driver.get(self.startpage)
             try:
@@ -292,23 +302,32 @@ class Warmane:
                         print("Driver Closed")
                         proxy = self.get_proxies()
                         self.setup_chrome(proxy)
-                        self.captcha()
+                        if n == 0:
+                            sys.exit()
+                        else:
+                            self.captcha(n-1)
                 else:
                     print('Button not found.')
                     #self.send_text_message(log_list)
                     self.driver.quit()
                     proxy = self.get_proxies()
                     self.setup_chrome(proxy)
-                    self.captcha()
+                    if n == 0:
+                        sys.exit()
+                    else:
+                        self.captcha(n-1)
         except:
             self.driver.quit()
             proxy = self.get_proxies()
             self.setup_chrome(proxy)
-            self.captcha()         
+            if n == 0:
+                sys.exit()
+            else:
+                self.captcha(n-1)        
 
     def run_page(self):
 
-        self.captcha()
+        self.captcha(20)
 
         if self.cookie_worked == True:
             pass
@@ -335,7 +354,7 @@ class Warmane:
         self.driver.implicitly_wait(10)
 
         try:
-            self.driver.find_element_by_link_text("Collect points").click()
+            self.driver.find_element_by_link_text("Collect points")#.click()
             print("Daily points collected successfully")
             self.log_list.append("Daily points collected successfully")
             self.log_list.append("------------------")
