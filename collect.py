@@ -2,9 +2,6 @@ from selenium import webdriver
 from bs4 import BeautifulSoup
 from selenium.webdriver.common.keys import Keys
 from webdriver_manager.chrome import ChromeDriverManager
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.action_chains import ActionChains
 from pydub import AudioSegment
@@ -34,7 +31,7 @@ class Warmane:
         self.fb_api_url = 'https://graph.facebook.com/v8.0/me/'
         self.filename = 'test.mp3'
         self.google_startpage = "https://www.google.com/"
-        self.startpage = 'https://www.warmane.com/account/login'
+        self.startpage = 'https://www.warmane.com/account'
         self.log_list = []
         self.proxy = 0
         self.cookies = "cookies.txt"
@@ -214,9 +211,7 @@ class Warmane:
             time.sleep(2)
             self.driver.refresh()
             try:
-
-                WebDriverWait(self.driver, 30).until(EC.presence_of_element_located((By.ID, "userID")))
-
+                self.driver.find_element_by_id("userID")
             except:
                 print("Cookies were loaded up successfully")
                 self.cookie_worked = True
