@@ -366,11 +366,15 @@ class Warmane:
             self.driver.find_element_by_link_text("Collect points").click()
             print("Daily points collected successfully")
             self.log_list.append("Daily points collected successfully")
+            current_points = self.driver.find_element_by_class_name("myPoints")
+            self.log_list.append(f"Your current points are: {current_points.text}")
             self.log_list.append("------------------")
             self.save_cookies()
         except NoSuchElementException:
             print("Daily points were already collected")
             self.log_list.append("Daily points were already collected")
+            current_points = self.driver.find_element_by_class_name("myPoints")
+            self.log_list.append(f"Your current points are: {current_points.text}")
             self.log_list.append("------------------")
 
         except:
