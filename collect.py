@@ -30,7 +30,6 @@ class Warmane:
         self.sck = json_data["SCK"]
         self.fb_api_url = 'https://graph.facebook.com/v8.0/me/'
         self.filename = 'test.mp3'
-        self.google_startpage = "https://www.google.com/"
         self.startpage = 'https://www.warmane.com/account'
         self.log_list = []
         self.proxy = 0
@@ -40,6 +39,7 @@ class Warmane:
         self.obj = self.s3.Object('bucket-for-cookies','cookies.txt')
 
     def save_cookies(self):
+        self.obj.delete()
 
         pickle.dump(self.driver.get_cookies(), open(self.cookies, "wb"))
 
@@ -51,12 +51,10 @@ class Warmane:
 
         with open('cookies.txt', 'wb') as data:
             self.obj.download_fileobj(data)
-        self.obj.delete()
 
         cookies = pickle.load(open(self.cookies, "rb"))
         self.driver.delete_all_cookies()
         # have to be on a page before you can add any cookies, any page - does not matter which
-        self.driver.get("https://google.com" if url is None else url)
         for cookie in cookies:
             if isinstance(cookie.get('expiry'), float):#Checks if the instance expiry a float 
                 cookie['expiry'] = int(cookie['expiry'])# it converts expiry cookie to a int 
@@ -98,6 +96,7 @@ class Warmane:
         #print(f"Using the following user agent: {user_agent}")
 
         chrome_options = webdriver.ChromeOptions()
+        chrome_options.add_argument("--disable-notifications")
         chrome_options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
         chrome_options.add_argument("--headless")
         #chrome_options.add_argument("user-agent=Mozilla/5.0 (Windows Phone 10.0; Android 4.2.1; Microsoft; Lumia 640 XL LTE) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Mobile Safari/537.36 Edge/12.10166")
@@ -201,20 +200,21 @@ class Warmane:
     def captcha(self, n):
         
         try:
-            self.driver.get(self.google_startpage)
-            try:
-                self.load_cookies()
-            except:
-                pass
             time.sleep(2)
             self.driver.get(self.startpage)
-            time.sleep(2)
-            self.driver.refresh()
+            self.driver.find_element_by_class_name("navigation-logo")
+            try:
+                self.load_cookies()
+                time.sleep(2)
+                self.driver.refresh()
+            except:
+                pass
             try:
                 self.driver.find_element_by_id("userID")
             except:
                 print("Cookies were loaded up successfully")
                 self.cookie_worked = True
+                time.sleep(2)
             
             if self.cookie_worked == True:
                 pass
@@ -332,7 +332,14 @@ class Warmane:
         self.captcha(20)
 
         if self.cookie_worked == True:
-            pass
+            try:
+                self.driver.find_element_by_id("authCode").send_keys(f"{get_mfa()}")
+
+                self.driver.find_element_by_class_name("wm-ui-btn").click()
+                print("Passed MFA successfully.")
+            except NoSuchElementException:
+                print("MFA wasn't requested")
+                pass
         else:
             self.driver.switch_to.default_content()
 
@@ -356,10 +363,11 @@ class Warmane:
         self.driver.implicitly_wait(10)
 
         try:
-            self.driver.find_element_by_link_text("Collect points")#.click()
+            self.driver.find_element_by_link_text("Collect points").click()
             print("Daily points collected successfully")
             self.log_list.append("Daily points collected successfully")
             self.log_list.append("------------------")
+            self.save_cookies()
         except NoSuchElementException:
             print("Daily points were already collected")
             self.log_list.append("Daily points were already collected")
@@ -375,7 +383,6 @@ class Warmane:
         print("Successful script run")
         self.log_list.append("Successful script run")
         self.send_text_message(self.log_list)
-        self.save_cookies()
 
         self.driver.quit()
 
