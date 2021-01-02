@@ -2,6 +2,9 @@ from selenium import webdriver
 from bs4 import BeautifulSoup
 from selenium.webdriver.common.keys import Keys
 from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.action_chains import ActionChains
 from pydub import AudioSegment
@@ -208,8 +211,12 @@ class Warmane:
                 pass
             time.sleep(2)
             self.driver.get(self.startpage)
+            time.sleep(2)
+            self.driver.refresh()
             try:
-                self.driver.find_element_by_id("userID")
+
+                WebDriverWait(self.driver, 30).until(EC.presence_of_element_located((By.ID, "userID")))
+
             except:
                 print("Cookies were loaded up successfully")
                 self.cookie_worked = True
