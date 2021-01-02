@@ -108,7 +108,7 @@ class Warmane:
         else:
             chrome_options.add_argument(f'--proxy-server={proxy}')
 
-        driver = webdriver.Chrome(executable_path=os.environ.get("CHROMEDRIVER_PATH"), options=chrome_options)
+        driver = webdriver.Chrome(executable_path=os.environ.get("CHROMEDRIVER_PATH"), options=chrome_options)#"chromedriver", options=chrome_options)
         driver.set_page_load_timeout(120)
 
         self.driver = driver
@@ -303,6 +303,7 @@ class Warmane:
                         self.driver.quit()
                         print("Driver Closed")
                         proxy = self.get_proxies()
+                        print(f"{n} retries left")
                         self.setup_chrome(proxy)
                         if n == 0:
                             sys.exit()
@@ -314,6 +315,7 @@ class Warmane:
                     self.driver.quit()
                     proxy = self.get_proxies()
                     self.setup_chrome(proxy)
+                    print(f"{n} retries left")
                     if n == 0:
                         sys.exit()
                     else:
@@ -322,6 +324,7 @@ class Warmane:
             self.driver.quit()
             proxy = self.get_proxies()
             self.setup_chrome(proxy)
+            print(f"{n} retries left")
             if n == 0:
                 sys.exit()
             else:
@@ -329,7 +332,7 @@ class Warmane:
 
     def run_page(self):
 
-        self.captcha(20)
+        self.captcha(5)
 
         if self.cookie_worked == True:
             try:
