@@ -282,9 +282,7 @@ class Warmane:
 
                                 action =  ActionChains(self.driver)
                                 self.human_like_mouse_move(action, inputbtn)
-                                for items in response:
-                                    inputbtn.send_keys(items)
-                                    time.sleep(random.randint(0.1, 0.3))
+                                inputbtn.send_keys(response)
 
                                 inputbtn.send_keys(Keys.ENTER)
                                 
