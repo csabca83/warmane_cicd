@@ -57,8 +57,7 @@ class Warmane:
         # have to be on a page before you can add any cookies, any page - does not matter which
         for cookie in cookies:
             if isinstance(cookie.get('expiry'), float):#Checks if the instance expiry a float 
-                #cookie['expiry'] = int(cookie['expiry'])# it converts expiry cookie to a int
-                del cookie['expiry']
+                cookie['expiry'] = int(cookie['expiry'])# it converts expiry cookie to a int 
             print(cookie)
             self.driver.add_cookie(cookie)
 
@@ -100,12 +99,11 @@ class Warmane:
         chrome_options = webdriver.ChromeOptions()
         chrome_options.add_argument("--disable-notifications")
         chrome_options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
-        #chrome_options.add_argument("--headless")
+        chrome_options.add_argument("--headless")
         #chrome_options.add_argument("user-agent=Mozilla/5.0 (Windows Phone 10.0; Android 4.2.1; Microsoft; Lumia 640 XL LTE) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Mobile Safari/537.36 Edge/12.10166")
-        chrome_options.add_argument('--profile-directory="Default"')
         chrome_options.add_argument("--disable-dev-shm-usage")
         chrome_options.add_argument("--no-sandbox")
-        #chrome_options.add_argument(f'user-agent={user_agent}')
+        chrome_options.add_argument(f'user-agent={user_agent}')
         if proxy == 0:
             pass
         else:
@@ -284,7 +282,9 @@ class Warmane:
 
                                 action =  ActionChains(self.driver)
                                 self.human_like_mouse_move(action, inputbtn)
-                                inputbtn.send_keys(response)
+                                for items in response:
+                                    inputbtn.send_keys(items)
+                                    time.sleep(random.randint(0.1, 0.3))
 
                                 inputbtn.send_keys(Keys.ENTER)
                                 
