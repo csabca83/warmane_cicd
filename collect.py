@@ -47,7 +47,7 @@ class Warmane:
             self.obj.upload_fileobj(data)
 
 
-    def load_cookies(self, url=None):
+    def load_cookies(self):
 
         with open('cookies.txt', 'wb') as data:
             self.obj.download_fileobj(data)
@@ -58,6 +58,7 @@ class Warmane:
         for cookie in cookies:
             if isinstance(cookie.get('expiry'), float):#Checks if the instance expiry a float 
                 cookie['expiry'] = int(cookie['expiry'])# it converts expiry cookie to a int 
+            print(cookie)
             self.driver.add_cookie(cookie)
 
     def get_proxies(self):
@@ -202,10 +203,13 @@ class Warmane:
         try:
             time.sleep(2)
             self.driver.get(self.startpage)
-            self.driver.find_element_by_class_name("navigation-logo")
+            time.sleep(2)
             try:
-                self.load_cookies()
+                #self.load_cookies()
+                print("Got cookies from S3")
                 time.sleep(2)
+                self.driver.find_element_by_class_name("navigation-logo")
+                time.sleep(5)
                 self.driver.refresh()
             except:
                 pass
@@ -278,8 +282,10 @@ class Warmane:
 
                                 action =  ActionChains(self.driver)
                                 self.human_like_mouse_move(action, inputbtn)
+                                for items in response:
+                                    inputbtn.send_keys(items)
+                                    time.sleep(random.randint(0.1, 0.3))
 
-                                inputbtn.send_keys(response)
                                 inputbtn.send_keys(Keys.ENTER)
                                 
                                 time.sleep(random.randint(10, 12))
@@ -302,32 +308,38 @@ class Warmane:
                         print('Recaptcha temporarily banned your IP')
                         self.driver.quit()
                         print("Driver Closed")
-                        proxy = self.get_proxies()
                         print(f"{n} retries left")
-                        self.setup_chrome(proxy)
                         if n == 0:
                             sys.exit()
                         else:
+                            proxy = self.get_proxies()
+                            self.setup_chrome(proxy)
                             self.captcha(n-1)
                 else:
                     print('Button not found.')
                     #self.send_text_message(log_list)
                     self.driver.quit()
-                    proxy = self.get_proxies()
-                    self.setup_chrome(proxy)
                     print(f"{n} retries left")
+
                     if n == 0:
                         sys.exit()
+
                     else:
+
+                        proxy = self.get_proxies()
+                        self.setup_chrome(proxy)
                         self.captcha(n-1)
         except:
             self.driver.quit()
-            proxy = self.get_proxies()
-            self.setup_chrome(proxy)
             print(f"{n} retries left")
+
             if n == 0:
                 sys.exit()
+
             else:
+
+                proxy = self.get_proxies()
+                self.setup_chrome(proxy)
                 self.captcha(n-1)        
 
     def run_page(self):
