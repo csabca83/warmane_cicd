@@ -57,9 +57,7 @@ class Warmane:
         # have to be on a page before you can add any cookies, any page - does not matter which
         for cookie in cookies:
             if isinstance(cookie.get('expiry'), float):#Checks if the instance expiry a float 
-                #cookie['expiry'] = int(cookie['expiry'])# it converts expiry cookie to a int
-                del cookie['expiry']
-            print(cookie)
+                cookie['expiry'] = int(cookie['expiry'])# it converts expiry cookie to a int
             self.driver.add_cookie(cookie)
 
     def get_proxies(self):
