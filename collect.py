@@ -207,14 +207,24 @@ class Warmane:
             self.driver.get(self.startpage)
             time.sleep(2)
             try:
-                #self.load_cookies()
+                self.load_cookies()
                 print("Got cookies from S3")
                 time.sleep(2)
                 self.driver.find_element_by_class_name("navigation-logo")
                 time.sleep(5)
                 self.driver.refresh()
             except:
-                pass
+                self.driver.quit()
+                print(f"{n} retries left")
+
+                if n == 0:
+                    sys.exit()
+
+                else:
+
+                    proxy = self.get_proxies()
+                    self.setup_chrome(proxy)
+                    self.captcha(n-1)
             try:
                 self.driver.find_element_by_id("userID")
             except:
