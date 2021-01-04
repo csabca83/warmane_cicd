@@ -216,7 +216,7 @@ class Warmane:
                 print(f"{n} retries left")
 
                 if n == 0 or n < 0:
-                    sys.exit()
+                    os._exit(os.EX_OK)
 
                 else:
 
@@ -318,7 +318,7 @@ class Warmane:
                         print("Driver Closed")
                         print(f"{n} retries left")
                         if n == 0 or n < 0:
-                            sys.exit()
+                            os._exit(os.EX_OK)
                         else:
                             proxy = self.get_proxies()
                             self.setup_chrome(proxy)
@@ -330,7 +330,7 @@ class Warmane:
                     print(f"{n} retries left")
 
                     if n == 0 or n < 0:
-                        sys.exit()
+                        os._exit(os.EX_OK)
 
                     else:
 
@@ -342,7 +342,7 @@ class Warmane:
             print(f"{n} retries left")
 
             if n == 0 or n < 0:
-                sys.exit()
+                os._exit(os.EX_OK)
 
             else:
 
@@ -406,7 +406,7 @@ class Warmane:
             self.log_list.append("!!!Something went wrong!!!")
             self.send_text_message(self.log_list)
             self.driver.quit()
-            sys.exit()
+            os._exit(os.EX_OK)
 
         print("Successful script run")
         self.log_list.append("Successful script run")
