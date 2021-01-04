@@ -7,10 +7,8 @@ from selenium.webdriver.common.action_chains import ActionChains
 from pydub import AudioSegment
 import numpy as np
 import scipy.interpolate as si
-import json, sys
 from googleauthenticator import get_mfa
-import os, sys, boto3
-import time, requests, random, pickle
+import os, boto3, json, time, requests, random, pickle
 from fake_useragent import UserAgent
 
 
@@ -37,6 +35,7 @@ class Warmane:
         self.cookie_worked = False
         self.s3 = boto3.resource('s3', aws_access_key_id = self.ack, aws_secret_access_key = self.sck)
         self.obj = self.s3.Object('bucket-for-cookies','cookies.txt')
+        self.stop_s3 = False
 
     def save_cookies(self):
         self.obj.delete()
@@ -49,8 +48,13 @@ class Warmane:
 
     def load_cookies(self):
 
-        with open('cookies.txt', 'wb') as data:
-            self.obj.download_fileobj(data)
+        if self.stop_s3 == False:
+            with open('cookies.txt', 'wb') as data:
+                self.obj.download_fileobj(data)
+            
+            print("Got cookies from S3")
+        else:
+            pass
 
         cookies = pickle.load(open(self.cookies, "rb"))
         self.driver.delete_all_cookies()
@@ -107,6 +111,7 @@ class Warmane:
         if proxy == 0:
             pass
         else:
+            self.stop_s3 = True
             chrome_options.add_argument(f'--proxy-server={proxy}')
 
         driver = webdriver.Chrome(executable_path=os.environ.get("CHROMEDRIVER_PATH"), options=chrome_options)#"/media/csabi/Samsung T7/VScode/heroku test/heroku_warmane/chromedriver", options=chrome_options)
@@ -206,7 +211,6 @@ class Warmane:
             time.sleep(2)
             try:
                 self.load_cookies()
-                print("Got cookies from S3")
                 time.sleep(2)
                 self.driver.find_element_by_class_name("navigation-logo")
                 time.sleep(5)
@@ -225,6 +229,7 @@ class Warmane:
                     self.captcha(n-1)
             try:
                 self.driver.find_element_by_id("userID")
+                print("Cookies are no longer working for this website")
             except:
                 print("Cookies were loaded up successfully")
                 self.cookie_worked = True
@@ -234,7 +239,7 @@ class Warmane:
                 pass
             else:
 
-                print("Opened the startpage and now checking the iframes for recaptcha")
+                print("Opened the startpage, checking the iframes for recaptcha")
 
                 self.driver.implicitly_wait(30)
                 outeriframe = self.driver.find_element_by_tag_name('iframe')
@@ -261,7 +266,7 @@ class Warmane:
                         audioBtnFound = True
                         audioBtnIndex = index
                         break
-                    except Exception as e:
+                    except Exception:
                         pass
 
                 if audioBtnFound:
@@ -311,13 +316,13 @@ class Warmane:
                                 print("Recaptcha solved")
                                 break
                             
-                    except Exception as e:
-                        print(e)
+                    except Exception:
                         print('Recaptcha temporarily banned your IP')
                         self.driver.quit()
                         print("Driver Closed")
                         print(f"{n} retries left")
                         if n == 0 or n < 0:
+                            print("Unsuccessful tries")
                             os._exit(os.EX_OK)
                         else:
                             proxy = self.get_proxies()
@@ -330,6 +335,7 @@ class Warmane:
                     print(f"{n} retries left")
 
                     if n == 0 or n < 0:
+                        print("Unsuccessful tries")
                         os._exit(os.EX_OK)
 
                     else:
@@ -342,6 +348,7 @@ class Warmane:
             print(f"{n} retries left")
 
             if n == 0 or n < 0:
+                print("Unsuccessful tries")
                 os._exit(os.EX_OK)
 
             else:
