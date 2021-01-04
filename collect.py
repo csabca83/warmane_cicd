@@ -215,7 +215,7 @@ class Warmane:
                 self.driver.quit()
                 print(f"{n} retries left")
 
-                if n == 0:
+                if n == 0 or n < 0:
                     sys.exit()
 
                 else:
@@ -317,7 +317,7 @@ class Warmane:
                         self.driver.quit()
                         print("Driver Closed")
                         print(f"{n} retries left")
-                        if n == 0:
+                        if n == 0 or n < 0:
                             sys.exit()
                         else:
                             proxy = self.get_proxies()
@@ -329,7 +329,7 @@ class Warmane:
                     self.driver.quit()
                     print(f"{n} retries left")
 
-                    if n == 0:
+                    if n == 0 or n < 0:
                         sys.exit()
 
                     else:
@@ -341,7 +341,7 @@ class Warmane:
             self.driver.quit()
             print(f"{n} retries left")
 
-            if n == 0:
+            if n == 0 or n < 0:
                 sys.exit()
 
             else:
