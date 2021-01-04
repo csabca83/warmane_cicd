@@ -57,7 +57,8 @@ class Warmane:
         # have to be on a page before you can add any cookies, any page - does not matter which
         for cookie in cookies:
             if isinstance(cookie.get('expiry'), float):#Checks if the instance expiry a float 
-                cookie['expiry'] = int(cookie['expiry'])# it converts expiry cookie to a int 
+                #cookie['expiry'] = int(cookie['expiry'])# it converts expiry cookie to a int
+                del cookie['expiry']
             print(cookie)
             self.driver.add_cookie(cookie)
 
@@ -98,9 +99,10 @@ class Warmane:
 
         chrome_options = webdriver.ChromeOptions()
         chrome_options.add_argument("--disable-notifications")
-        chrome_options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
+        chrome_options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")#"/usr/bin/google-chrome-stable"
         chrome_options.add_argument("--headless")
         #chrome_options.add_argument("user-agent=Mozilla/5.0 (Windows Phone 10.0; Android 4.2.1; Microsoft; Lumia 640 XL LTE) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Mobile Safari/537.36 Edge/12.10166")
+        #chrome_options.add_argument('--profile-directory="Default"')
         chrome_options.add_argument("--disable-dev-shm-usage")
         chrome_options.add_argument("--no-sandbox")
         chrome_options.add_argument(f'user-agent={user_agent}')
@@ -109,7 +111,7 @@ class Warmane:
         else:
             chrome_options.add_argument(f'--proxy-server={proxy}')
 
-        driver = webdriver.Chrome(executable_path=os.environ.get("CHROMEDRIVER_PATH"), options=chrome_options)#"chromedriver", options=chrome_options)
+        driver = webdriver.Chrome(executable_path=os.environ.get("CHROMEDRIVER_PATH"), options=chrome_options)#"/media/csabi/Samsung T7/VScode/heroku test/heroku_warmane/chromedriver", options=chrome_options)
         driver.set_page_load_timeout(120)
 
         self.driver = driver
@@ -383,6 +385,7 @@ class Warmane:
             self.log_list.append(f"Your current points are: {current_points.text}")
             self.log_list.append("------------------")
             self.save_cookies()
+            print("Cookies were uploaded successfully")
         except NoSuchElementException:
             print("Daily points were already collected")
             self.log_list.append("Daily points were already collected")
