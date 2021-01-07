@@ -1,5 +1,5 @@
 # https://github.com/teal33t/captcha_bypass
-## Dont use this code for spy.
+# Dont use this code for spy.
 
 import unittest
 import sys, time
