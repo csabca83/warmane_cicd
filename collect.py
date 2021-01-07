@@ -64,7 +64,7 @@ class Warmane(unittest.TestCase):
     def setUpOptions(self):
         self.options = webdriver.FirefoxOptions()
         self.options.headless = self.headless
-        self.options.binary_location = os.environ.get("FIREFOX_BIN")
+        #self.options.binary_location = os.environ.get("FIREFOX_BIN")
 
     # Enable Marionette, An automation driver for Mozilla's Gecko engine
     def setUpCapabilities(self):
@@ -85,7 +85,10 @@ class Warmane(unittest.TestCase):
             "ftpProxy": proxy,
             "sslProxy": proxy
         }
-        self.driver = webdriver.Firefox(options=self.options, capabilities=self.capabilities, firefox_profile=self.profile, executable_path=os.environ.get("GECKODRIVER_PATH"))
+        self.driver = webdriver.Firefox(options=self.options,
+                                        capabilities=self.capabilities,
+                                        firefox_profile=self.profile, 
+                                        executable_path=os.environ.get("GECKODRIVER_PATH"))
 
     def save_cookies(self):
         self.obj.delete()
