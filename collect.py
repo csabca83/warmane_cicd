@@ -253,7 +253,7 @@ class Warmane(unittest.TestCase):
         try:
             self.driver.get(self.startpage)
             try:
-                #self.load_cookies()
+                self.load_cookies()
                 time.sleep(2)
                 self.driver.find_element_by_class_name("navigation-logo")
                 self.driver.refresh()
