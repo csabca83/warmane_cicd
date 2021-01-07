@@ -1,48 +1,97 @@
-# /media/csabi/'Samsung T7'/VirtualEnvs/Warmane/bin/python3.8
+# https://github.com/teal33t/captcha_bypass
+# Dont use this code for spy.
 
-from selenium import webdriver
-from bs4 import BeautifulSoup
-from selenium.webdriver.common.keys import Keys
-from webdriver_manager.chrome import ChromeDriverManager
-from selenium.common.exceptions import NoSuchElementException
-from selenium.webdriver.common.action_chains import ActionChains
-from pydub import AudioSegment
+import unittest
+import sys, time
+from googleauthenticator import get_mfa
 import numpy as np
 import scipy.interpolate as si
-from googleauthenticator import get_mfa
+from bs4 import BeautifulSoup
+from datetime import datetime
+from time import sleep, time
+from random import uniform, randint
+from pydub import AudioSegment
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.proxy import Proxy, ProxyType
+from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.firefox.firefox_binary import FirefoxBinary
 import os, boto3, json, time, requests, random, pickle
-from fake_useragent import UserAgent
 
 
-class Warmane:
+# Randomization Related
+MIN_RAND        = 0.64
+MAX_RAND        = 1.27
+LONG_MIN_RAND   = 4.78
+LONG_MAX_RAND = 11.1
 
-    def __init__(self):
 
-        with open("secrets.json", "r") as f:
-            json_data = json.load(f)
+class Warmane(unittest.TestCase):
 
-        self.wittoken = json_data["wittoken"]
-        self.warmane_acc = json_data["warmane_acc"]
-        self.warmane_pass = json_data["warmane_pass"]
-        self.access_token = json_data["ACCESS_TOKEN"]
-        self.psid = json_data["CSABI"]
-        self.ack = json_data["ACK"]
-        self.sck = json_data["SCK"]
-        self.fb_api_url = 'https://graph.facebook.com/v8.0/me/'
-        self.filename = 'test.mp3'
-        self.startpage = 'https://www.warmane.com/account'
-        self.log_list = []
-        self.proxy = 0
-        self.cookies = "cookies.txt"
-        self.cookie_worked = False
-        self.s3 = boto3.resource('s3', aws_access_key_id = self.ack, aws_secret_access_key = self.sck)
-        self.obj = self.s3.Object('bucket-for-cookies','cookies.txt')
-        self.stop_s3 = False
+
+    with open("secrets.json", "r") as f:
+        json_data = json.load(f)
+
+    previous_response = ""
+    default_page_proxy = 0
+    wittoken = json_data["wittoken"]
+    warmane_acc = json_data["warmane_acc"]
+    warmane_pass = json_data["warmane_pass"]
+    access_token = json_data["ACCESS_TOKEN"]
+    psid = json_data["CSABI"]
+    ack = json_data["ACK"]
+    sck = json_data["SCK"]
+    fb_api_url = 'https://graph.facebook.com/v8.0/me/'
+    filename = 'test.mp3'
+    startpage = 'https://www.warmane.com/account'
+    log_list = []
+    proxy = 0
+    cookies = "cookies.txt"
+    cookie_worked = False
+    s3 = boto3.resource('s3', aws_access_key_id = ack, aws_secret_access_key = sck)
+    obj = s3.Object('bucket-for-cookies','cookies.txt')
+    stop_s3 = False
+    headless = True
+    options = None
+    profile = None
+    capabilities = None
+
+    # Setup options for webdriver
+    def setUpOptions(self):
+        self.options = webdriver.FirefoxOptions()
+        self.options.headless = self.headless
+        self.options.binary_location = os.environ.get("FIREFOX_BIN")
+
+    # Enable Marionette, An automation driver for Mozilla's Gecko engine
+    def setUpCapabilities(self):
+        self.capabilities = webdriver.DesiredCapabilities.FIREFOX
+        self.capabilities['marionette'] = True
+
+    # Setup settings
+    def setUp(self, proxy=default_page_proxy):
+        self.setUpOptions()
+        self.setUpCapabilities()
+        if proxy == 0:
+            pass
+        else:
+            self.stop_s3 = True
+            self.capabilities['proxy'] = {
+            "proxyType": "MANUAL",
+            "httpProxy": proxy,
+            "ftpProxy": proxy,
+            "sslProxy": proxy
+        }
+        self.driver = webdriver.Firefox(options=self.options, capabilities=self.capabilities, firefox_profile=self.profile, executable_path=os.environ.get("GECKODRIVER_PATH"))
 
     def save_cookies(self):
         self.obj.delete()
 
-        pickle.dump(self.driver.get_cookies(), open(self.cookies, "wb"))
+        with open(self.cookies, "wb") as f:
+            pickle.dump(self.driver.get_cookies(), f)
 
         with open('cookies.txt', 'rb') as data:
             self.obj.upload_fileobj(data)
@@ -57,14 +106,63 @@ class Warmane:
             print("Got cookies from S3")
         else:
             pass
+        try:
+            with open(self.cookies, "rb") as f:
+                cookies = pickle.load(f)
+            self.driver.delete_all_cookies()
+            # have to be on a page before you can add any cookies, any page - does not matter which
+            for cookie in cookies:
+                if isinstance(cookie.get('expiry'), float):#Checks if the instance expiry a float 
+                    cookie['expiry'] = int(cookie['expiry'])# it converts expiry cookie to a int
+                self.driver.add_cookie(cookie)
+        except:
+            print("No cookies found")
 
-        cookies = pickle.load(open(self.cookies, "rb"))
-        self.driver.delete_all_cookies()
-        # have to be on a page before you can add any cookies, any page - does not matter which
-        for cookie in cookies:
-            if isinstance(cookie.get('expiry'), float):#Checks if the instance expiry a float 
-                cookie['expiry'] = int(cookie['expiry'])# it converts expiry cookie to a int
-            self.driver.add_cookie(cookie)
+    def send_text_message(self, message):
+
+        message = ('\n'.join(map(str, message)))
+
+        headers = {
+            'Content-Type': 'application/json'
+        }
+
+        data = {
+            'messaging_type': 'RESPONSE',
+            'recipient': {'id': self.psid},
+            'message': {'text': message}
+        }
+
+        params = {'access_token': self.access_token}
+        api_url = self.fb_api_url + 'messages'
+        response = requests.post(api_url, headers=headers, params=params, data=json.dumps(data))
+
+        print(response.content)
+        print(data)
+
+    def audioToText(self, wavaudiofilename):
+
+        url = 'https://api.wit.ai/speech'
+        headers = {
+            'Authorization': f'Bearer {self.wittoken}',
+            'Content-Type': 'audio/wav',
+        }
+
+        params = (
+            ('v', '20200513'),
+        )
+
+        with open(wavaudiofilename, 'rb') as e:
+            data = e.read()
+        response = requests.post(url, headers=headers, params=params, data=data)
+
+        json_data = response.json()
+
+        return json_data["text"]
+
+    def saveFile(self, content):
+        with open(self.filename, "wb") as handle:
+            for data in content.iter_content():
+                handle.write(data)
 
     def get_proxies(self):
 
@@ -95,31 +193,17 @@ class Warmane:
             time.sleep(10)
             self.get_proxies()
 
-    def setup_chrome(self, proxy):
+    # Simple logging method
+    def log(self, s,t=None):
+            now = datetime.now()
+            if t == None :
+                    t = "Main"
+            print ("%s :: %s -> %s " % (str(now), t, s))
 
-        ua = UserAgent()
-        user_agent = ua.random
-        #print(f"Using the following user agent: {user_agent}")
-
-        chrome_options = webdriver.ChromeOptions()
-        chrome_options.add_argument("--disable-notifications")
-        chrome_options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")#"/usr/bin/google-chrome-stable"
-        chrome_options.add_argument("--headless")
-        #chrome_options.add_argument("user-agent=Mozilla/5.0 (Windows Phone 10.0; Android 4.2.1; Microsoft; Lumia 640 XL LTE) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Mobile Safari/537.36 Edge/12.10166")
-        #chrome_options.add_argument('--profile-directory="Default"')
-        chrome_options.add_argument("--disable-dev-shm-usage")
-        chrome_options.add_argument("--no-sandbox")
-        chrome_options.add_argument(f'user-agent={user_agent}')
-        if proxy == 0:
-            pass
-        else:
-            self.stop_s3 = True
-            chrome_options.add_argument(f'--proxy-server={proxy}')
-
-        driver = webdriver.Chrome(executable_path=os.environ.get("CHROMEDRIVER_PATH"), options=chrome_options)#"/media/csabi/Samsung T7/VScode/heroku test/heroku_warmane/chromedriver", options=chrome_options)
-        driver.set_page_load_timeout(120)
-
-        self.driver = driver
+    # Use time.sleep for waiting and uniform for randomizing
+    def wait_between(self, a, b):
+        rand=uniform(a, b)
+        sleep(rand)
 
     # Using B-spline for simulate humane like mouse movments
     def human_like_mouse_move(self, action, start_element):
@@ -155,67 +239,20 @@ class Warmane:
         for mouse_x, mouse_y in zip(x_i, y_i):
             action.move_by_offset(mouse_x,mouse_y)
             action.perform()
+            self.log("Move mouse to, %s ,%s" % (mouse_x, mouse_y))
             i += 1
             if i == c:
                 break
 
 
-    def send_text_message(self, message):
-
-        message = ('\n'.join(map(str, message)))
-
-        headers = {
-            'Content-Type': 'application/json'
-        }
-
-        data = {
-            'messaging_type': 'RESPONSE',
-            'recipient': {'id': self.psid},
-            'message': {'text': message}
-        }
-
-        params = {'access_token': self.access_token}
-        api_url = self.fb_api_url + 'messages'
-        response = requests.post(api_url, headers=headers, params=params, data=json.dumps(data))
-
-        print(response.content)
-        print(data)
-
-    def audioToText(self, wavaudiofilename):
-
-        url = 'https://api.wit.ai/speech'
-        headers = {
-            'Authorization': f'Bearer {self.wittoken}',
-            'Content-Type': 'audio/wav',
-        }
-
-        params = (
-            ('v', '20200513'),
-        )
-
-        data = open(wavaudiofilename, 'rb').read()
-        response = requests.post(url, headers=headers, params=params, data=data)
-
-        json_data = response.json()
-
-        return json_data["text"]
-
-    def saveFile(self, content):
-        with open(self.filename, "wb") as handle:
-            for data in content.iter_content():
-                handle.write(data)
-
     def captcha(self, n):
-        
+
         try:
-            time.sleep(2)
             self.driver.get(self.startpage)
-            time.sleep(2)
             try:
-                self.load_cookies()
+                #self.load_cookies()
                 time.sleep(2)
                 self.driver.find_element_by_class_name("navigation-logo")
-                time.sleep(5)
                 self.driver.refresh()
             except:
                 self.driver.quit()
@@ -227,7 +264,7 @@ class Warmane:
                 else:
 
                     proxy = self.get_proxies()
-                    self.setup_chrome(proxy)
+                    self.setUp(proxy)
                     self.captcha(n-1)
             try:
                 self.driver.find_element_by_id("userID")
@@ -243,10 +280,9 @@ class Warmane:
 
                 print("Opened the startpage, checking the iframes for recaptcha")
 
-                self.driver.implicitly_wait(30)
+                self.driver.implicitly_wait(10)
                 outeriframe = self.driver.find_element_by_tag_name('iframe')
                 outeriframe.click()
-
 
                 allIframesLen = self.driver.find_elements_by_tag_name('iframe')
                 audioBtnFound = False
@@ -263,8 +299,6 @@ class Warmane:
                         self.human_like_mouse_move(action, audioBtn)
                         audioBtn.click()
 
-                        time.sleep(random.randint(5, 10))
-
                         audioBtnFound = True
                         audioBtnIndex = index
                         break
@@ -273,50 +307,60 @@ class Warmane:
 
                 if audioBtnFound:
                     try:
-                        while True:
-                            print("Check audio button")
+                        while audioBtnFound:
                             href = self.driver.find_element_by_id('audio-source').get_attribute('src')
                             response = requests.get(href, stream=True)
+                            if self.previous_response == response:
+                                pass
+                            else:
+                                href = self.driver.find_element_by_id('audio-source').get_attribute('src')
+                                response = requests.get(href, stream=True)
+                                print("Check audio button")
+                                self.saveFile(response)
 
-                            self.saveFile(response)
 
+                                print("Converting the mp3 audiofile to wav")
+                                sound = AudioSegment.from_mp3("test.mp3")
+                                sound = sound.export("test.wav", format='wav')
+                                sound.close()
 
-                            print("Converting the mp3 audiofile to wav")
-                            sound = AudioSegment.from_mp3("test.mp3")
-                            sound.export("test.wav", format='wav')
+                                response = self.audioToText("test.wav") #os.getcwd() + '/' + "test.wav")
 
-                            response = self.audioToText("test.wav") #os.getcwd() + '/' + "test.wav")
+                                print("Text from the response was: " + response)
+                                print("Sending the text result back to captcha")
 
-                            print("Text from the response was: " + response)
-                            print("Sending the text result back to captcha")
+                                self.driver.switch_to.default_content()
+                                iframe = self.driver.find_elements_by_tag_name('iframe')[audioBtnIndex]
+                                self.driver.switch_to.frame(iframe)
 
-                            self.driver.switch_to.default_content()
-                            iframe = self.driver.find_elements_by_tag_name('iframe')[audioBtnIndex]
-                            self.driver.switch_to.frame(iframe)
-
-                            try:
-                                inputbtn = self.driver.find_element_by_id('audio-response')
-
-                                action =  ActionChains(self.driver)
-                                self.human_like_mouse_move(action, inputbtn)
-                                inputbtn.send_keys(response)
-
-                                inputbtn.send_keys(Keys.ENTER)
-                                
-                                time.sleep(random.randint(10, 12))
-                                errorMsg = self.driver.find_elements_by_class_name('rc-audiochallenge-error-message')[0]
-
-                                if errorMsg.text == "" or errorMsg.value_of_css_property('display') == 'none':
-
-                                    print("Recaptcha solved")
-                                    break
                                 try:
-                                    print("Captcha's response: " + errorMsg.text)
+                                    if self.previous_response == response:
+                                        print("Recaptcha solved")
+                                        audioBtnFound = False
+                                    else:
+                                        inputbtn = self.driver.find_element_by_id('audio-response')
+
+                                        inputbtn.send_keys(response)
+
+                                        inputbtn.send_keys(Keys.ENTER)
+                                        
+                                        time.sleep(random.randint(3, 5))
+                                        errorMsg = self.driver.find_elements_by_class_name('rc-audiochallenge-error-message')[0]
+
+                                    if errorMsg.text == "" or errorMsg.value_of_css_property('display') == 'none':
+
+                                        print("Recaptcha solved")
+                                        audioBtnFound = False
+                                    else:
+                                        try:
+                                            print("Captcha's response: " + errorMsg.text)
+                                            self.previous_response = response
+                                        except:
+                                            print("Captcha's response: " + errorMsg.value_of_css_property('display'))
+                                            self.previous_response = response
                                 except:
-                                    print("Captcha's response: " + errorMsg.value_of_css_property('display'))
-                            except:
-                                print("Recaptcha solved")
-                                break
+                                    print("Recaptcha solved")
+                                    audioBtnFound = False
                             
                     except Exception:
                         print('Recaptcha temporarily banned your IP')
@@ -328,7 +372,7 @@ class Warmane:
                             os._exit(os.EX_OK)
                         else:
                             proxy = self.get_proxies()
-                            self.setup_chrome(proxy)
+                            self.setUp(proxy)
                             self.captcha(n-1)
                 else:
                     print('Button not found.')
@@ -343,7 +387,7 @@ class Warmane:
                     else:
 
                         proxy = self.get_proxies()
-                        self.setup_chrome(proxy)
+                        self.setUp(proxy)
                         self.captcha(n-1)
         except:
             self.driver.quit()
@@ -356,11 +400,11 @@ class Warmane:
             else:
 
                 proxy = self.get_proxies()
-                self.setup_chrome(proxy)
+                self.setUp(proxy)
                 self.captcha(n-1)        
 
-    def run_page(self):
-
+    # Main function
+    def test_run(self):
         self.captcha(5)
 
         if self.cookie_worked == True:
@@ -404,13 +448,16 @@ class Warmane:
             self.log_list.append(f"Your current points are: {current_points.text}")
             self.log_list.append("------------------")
             self.save_cookies()
-            print("Cookies were uploaded successfully")
+            print("Cookies were saved")
         except NoSuchElementException:
             print("Daily points were already collected")
             self.log_list.append("Daily points were already collected")
             current_points = self.driver.find_element_by_class_name("myPoints")
             self.log_list.append(f"Your current points are: {current_points.text}")
             self.log_list.append("------------------")
+            self.save_cookies()
+            print("Cookies were saved")
+            self.driver.quit()
 
         except:
             print("!!!Something went wrong!!!")
@@ -425,7 +472,10 @@ class Warmane:
 
         self.driver.quit()
 
+
+
+    def tearDown(self):
+        self.wait_between(21.13, 31.05)
+
 if __name__ == "__main__":
-    b = Warmane()
-    b.setup_chrome(0)
-    b.run_page()
+    unittest.main()
