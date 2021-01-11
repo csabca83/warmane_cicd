@@ -87,7 +87,7 @@ class Warmane(unittest.TestCase):
         self.driver = webdriver.Firefox(options=self.options,
                                         capabilities=self.capabilities,
                                         firefox_profile=self.profile, 
-                                        executable_path="geckodriver")
+                                        executable_path="./geckodriver")
         self.driver.set_page_load_timeout(20)
 
     def save_cookies(self):
