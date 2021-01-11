@@ -1,5 +1,4 @@
-## https://github.com/teal33t/captcha_bypass
-## Dont use this code for spy.
+## source /media/csabi/Samsung_T7/VirtualEnvs/Warmane/bin/activate
 
 import unittest
 import sys, time
@@ -88,7 +87,7 @@ class Warmane(unittest.TestCase):
         self.driver = webdriver.Firefox(options=self.options,
                                         capabilities=self.capabilities,
                                         firefox_profile=self.profile, 
-                                        executable_path=os.environ.get("GECKODRIVER_PATH"))
+                                        executable_path="geckodriver")
 
     def save_cookies(self):
         self.obj.delete()
