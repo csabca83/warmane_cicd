@@ -48,6 +48,7 @@ class Warmane(unittest.TestCase):
     filename = 'test.mp3'
     startpage = 'https://www.warmane.com/account'
     log_list = []
+    error_list = []
     proxy = 0
     cookies = "cookies.txt"
     cookie_worked = False
@@ -107,6 +108,7 @@ class Warmane(unittest.TestCase):
                 self.obj.download_fileobj(data)
             
             print("Got cookies from S3")
+            self.error_list.append("Got cookies from S3")
         else:
             pass
         try:
@@ -120,6 +122,7 @@ class Warmane(unittest.TestCase):
                 self.driver.add_cookie(cookie)
         except:
             print("No cookies found")
+            self.error_list.append("No cookies found")
 
     def send_text_message(self, message):
 
@@ -189,6 +192,7 @@ class Warmane(unittest.TestCase):
             selected_proxy = proxy_listed[random_proxy]
 
             print(f"The following proxy were selected: {selected_proxy}")
+            self.error_list.append(f"The following proxy were selected: {selected_proxy}")
 
             return selected_proxy
 
@@ -202,6 +206,7 @@ class Warmane(unittest.TestCase):
             if t == None :
                     t = "Main"
             print ("%s :: %s -> %s " % (str(now), t, s))
+            self.error_list.append("%s :: %s -> %s " % (str(now), t, s))
 
     # Use time.sleep for waiting and uniform for randomizing
     def wait_between(self, a, b):
@@ -260,6 +265,7 @@ class Warmane(unittest.TestCase):
             except:
                 self.driver.quit()
                 print(f"{n} retries left")
+                self.error_list.append(f"{n} retries left")
 
                 if n == 0 or n < 0:
                     os._exit(os.EX_OK)
@@ -272,8 +278,10 @@ class Warmane(unittest.TestCase):
             try:
                 self.driver.find_element_by_id("userID")
                 print("Cookies are no longer working for this website")
+                self.error_list.append("Cookies are no longer working for this website")
             except:
                 print("Cookies were loaded up successfully")
+                self.error_list.append("Cookies were loaded up successfully")
                 self.cookie_worked = True
                 time.sleep(2)
             
@@ -282,6 +290,7 @@ class Warmane(unittest.TestCase):
             else:
 
                 print("Opened the startpage, checking the iframes for recaptcha")
+                self.error_list.append("Opened the startpage, checking the iframes for recaptcha")
 
                 self.driver.implicitly_wait(10)
                 outeriframe = self.driver.find_element_by_tag_name('iframe')
@@ -319,10 +328,12 @@ class Warmane(unittest.TestCase):
                                 href = self.driver.find_element_by_id('audio-source').get_attribute('src')
                                 response = requests.get(href, stream=True)
                                 print("Check audio button")
+                                self.error_list.append("Check audio button")
                                 self.saveFile(response)
 
 
                                 print("Converting the mp3 audiofile to wav")
+                                self.error_list.append("Converting the mp3 audiofile to wav")
                                 sound = AudioSegment.from_mp3("test.mp3")
                                 sound = sound.export("test.wav", format='wav')
                                 sound.close()
@@ -330,7 +341,9 @@ class Warmane(unittest.TestCase):
                                 response = self.audioToText("test.wav") #os.getcwd() + '/' + "test.wav")
 
                                 print("Text from the response was: " + response)
+                                self.error_list.append("Text from the response was: " + response)
                                 print("Sending the text result back to captcha")
+                                self.error_list.append("Sending the text result back to captcha")
 
                                 self.driver.switch_to.default_content()
                                 iframe = self.driver.find_elements_by_tag_name('iframe')[audioBtnIndex]
@@ -339,6 +352,7 @@ class Warmane(unittest.TestCase):
                                 try:
                                     if self.previous_response == response:
                                         print("Recaptcha solved")
+                                        self.error_list.append("Recaptcha solved")
                                         audioBtnFound = False
                                     else:
                                         inputbtn = self.driver.find_element_by_id('audio-response')
@@ -353,25 +367,33 @@ class Warmane(unittest.TestCase):
                                     if errorMsg.text == "" or errorMsg.value_of_css_property('display') == 'none':
 
                                         print("Recaptcha solved")
+                                        self.error_list.append("Recaptcha solved")
                                         audioBtnFound = False
                                     else:
                                         try:
                                             print("Captcha's response: " + errorMsg.text)
+                                            self.error_list.append("Captcha's response: " + errorMsg.text)
                                             self.previous_response = response
                                         except:
                                             print("Captcha's response: " + errorMsg.value_of_css_property('display'))
+                                            self.error_list.append("Captcha's response: " + errorMsg.value_of_css_property('display'))
                                             self.previous_response = response
                                 except:
                                     print("Recaptcha solved")
+                                    self.error_list.append("Recaptcha solved")
                                     audioBtnFound = False
                             
                     except Exception:
                         print('Recaptcha temporarily banned your IP')
+                        self.error_list.append('Recaptcha temporarily banned your IP')
                         self.driver.quit()
                         print("Driver Closed")
+                        self.error_list.append("Driver Closed")
                         print(f"{n} retries left")
+                        self.error_list.append("Driver Closed")
                         if n == 0 or n < 0:
                             print("Unsuccessful tries")
+                            self.error_list.append("Unsuccessful tries")
                             os._exit(os.EX_OK)
                         else:
                             proxy = self.get_proxies()
@@ -379,12 +401,15 @@ class Warmane(unittest.TestCase):
                             self.captcha(n-1)
                 else:
                     print('Button not found.')
+                    self.error_list.append('Button not found.')
                     #self.send_text_message(log_list)
                     self.driver.quit()
                     print(f"{n} retries left")
+                    self.error_list.append(f"{n} retries left")
 
                     if n == 0 or n < 0:
                         print("Unsuccessful tries")
+                        self.error_list.append("Unsuccessful tries")
                         os._exit(os.EX_OK)
 
                     else:
@@ -395,9 +420,11 @@ class Warmane(unittest.TestCase):
         except:
             self.driver.quit()
             print(f"{n} retries left")
+            self.error_list.append(f"{n} retries left")
 
             if n == 0 or n < 0:
                 print("Unsuccessful tries")
+                self.error_list.append("Unsuccessful tries")
                 os._exit(os.EX_OK)
 
             else:
@@ -416,8 +443,10 @@ class Warmane(unittest.TestCase):
 
                 self.driver.find_element_by_class_name("wm-ui-btn").click()
                 print("Passed MFA successfully.")
+                self.error_list.append("Passed MFA successfully.")
             except NoSuchElementException:
                 print("MFA wasn't requested")
+                self.error_list.append("MFA wasn't requested")
                 pass
         else:
             self.driver.switch_to.default_content()
@@ -427,6 +456,7 @@ class Warmane(unittest.TestCase):
             self.driver.find_element_by_xpath("//button[@type='submit']").click()
 
             print("Added UserID and Password and clicked on login")
+            self.error_list.append("Added UserID and Password and clicked on login")
             self.driver.implicitly_wait(10)
 
             ##############################
@@ -435,8 +465,10 @@ class Warmane(unittest.TestCase):
 
                 self.driver.find_element_by_class_name("wm-ui-btn").click()
                 print("Passed MFA successfully.")
+                self.error_list.append("Passed MFA successfully.")
             except NoSuchElementException:
                 print("MFA wasn't requested")
+                self.error_list.append("MFA wasn't requested")
                 pass
 
         self.driver.implicitly_wait(10)
@@ -464,6 +496,7 @@ class Warmane(unittest.TestCase):
 
         except:
             print("!!!Something went wrong!!!")
+            self.error_list.append("!!!Something went wrong!!!")
             self.log_list.append("!!!Something went wrong!!!")
             self.send_text_message(self.log_list)
             self.driver.quit()
@@ -479,6 +512,12 @@ class Warmane(unittest.TestCase):
 
     def tearDown(self):
         self.wait_between(21.13, 31.05)
+        
 
 if __name__ == "__main__":
-    unittest.main()
+    response = (unittest.main(exit=False).result.errors)
+
+    if len(response) != 0:
+        Warmane().send_text_message(response)
+    else:
+        pass
