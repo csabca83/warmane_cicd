@@ -395,6 +395,10 @@ class Warmane(unittest.TestCase):
                             print("Unsuccessful tries")
                             self.error_list.append("Unsuccessful tries")
                             os._exit(os.EX_OK)
+
+                        elif n == 3:
+                            self.captcha(n-1)
+
                         else:
                             proxy = self.get_proxies()
                             self.setUp(proxy)
@@ -412,6 +416,9 @@ class Warmane(unittest.TestCase):
                         self.error_list.append("Unsuccessful tries")
                         os._exit(os.EX_OK)
 
+                    elif n == 3:
+                        self.captcha(n-1)
+
                     else:
 
                         proxy = self.get_proxies()
@@ -426,6 +433,9 @@ class Warmane(unittest.TestCase):
                 print("Unsuccessful tries")
                 self.error_list.append("Unsuccessful tries")
                 os._exit(os.EX_OK)
+
+            elif n == 3:
+                self.captcha(n-1)
 
             else:
 
