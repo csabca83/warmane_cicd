@@ -464,7 +464,14 @@ class Warmane(unittest.TestCase):
 
             self.driver.find_element_by_id("userID").send_keys(self.warmane_acc)
             self.driver.find_element_by_id("userPW").send_keys(self.warmane_pass)
-            self.driver.find_element_by_xpath("//button[@type='submit']").click()
+            try:
+                self.driver.find_element_by_xpath("//button[@type='submit']").click()
+            except:
+                self.driver.refresh()
+                self.captcha(5)
+                self.driver.find_element_by_id("userID").send_keys(self.warmane_acc)
+                self.driver.find_element_by_id("userPW").send_keys(self.warmane_pass)
+                self.driver.find_element_by_xpath("//button[@type='submit']").click()
 
             print("Added UserID and Password and clicked on login")
             self.error_list.append("Added UserID and Password and clicked on login")
