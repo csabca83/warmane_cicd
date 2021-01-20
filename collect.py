@@ -505,5 +505,6 @@ if __name__ == "__main__":
 
     if len(response) != 0:
         Warmane().send_text_message(response)
+        Warmane().driver.quit()
     else:
         pass
