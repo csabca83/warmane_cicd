@@ -258,7 +258,7 @@ class Warmane(unittest.TestCase):
         try:
             self.driver.get(self.startpage)
             try:
-                self.load_cookies()
+                #self.load_cookies()
                 time.sleep(2)
                 self.driver.find_element_by_class_name("navigation-logo")
                 self.driver.refresh()
@@ -501,16 +501,16 @@ class Warmane(unittest.TestCase):
             current_points = self.driver.find_element_by_class_name("myPoints")
             self.log_list.append(f"Your current points are: {current_points.text}")
             self.log_list.append("------------------")
-            self.save_cookies()
-            print("Cookies were saved")
+            #self.save_cookies()
+            #print("Cookies were saved")
         except NoSuchElementException:
             print("Daily points were already collected")
             self.log_list.append("Daily points were already collected")
             current_points = self.driver.find_element_by_class_name("myPoints")
             self.log_list.append(f"Your current points are: {current_points.text}")
             self.log_list.append("------------------")
-            self.save_cookies()
-            print("Cookies were saved")
+            #self.save_cookies()
+            #print("Cookies were saved")
             self.driver.quit()
 
         except:
