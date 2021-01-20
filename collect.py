@@ -432,6 +432,7 @@ class Warmane(unittest.TestCase):
             if n == 0 or n < 0:
                 print("Unsuccessful tries")
                 self.error_list.append("Unsuccessful tries")
+                self.send_text_message(["Unsiccessful try, please try to run the script chmod +x geckodriver && python collect.py manually on https://dashboard.heroku.com/apps/warmane-app ."])
                 os._exit(os.EX_OK)
 
             elif n == 3:
