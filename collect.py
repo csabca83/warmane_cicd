@@ -84,10 +84,18 @@ class Warmane(unittest.TestCase):
             "ftpProxy": proxy,
             "sslProxy": proxy
         }
-        self.driver = webdriver.Firefox(options=self.options,
-                                        capabilities=self.capabilities,
-                                        firefox_profile=self.profile, 
-                                        executable_path="./geckodriver")
+        setting_up = True
+
+        while setting_up == True:
+            try:
+                self.driver = webdriver.Firefox(options=self.options,
+                                                capabilities=self.capabilities,
+                                                firefox_profile=self.profile, 
+                                                executable_path="./geckodriver")
+                setting_up = False
+            except:
+                print("Driver unexpectedly closed, retrying....")
+        
         self.driver.set_page_load_timeout(20)
 
     def save_cookies(self):
