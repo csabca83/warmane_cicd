@@ -18,6 +18,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.proxy import Proxy, ProxyType
 from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import ElementClickInterceptedException
 from selenium.webdriver.firefox.firefox_binary import FirefoxBinary
 import os, boto3, json, time, requests, random, pickle
 
@@ -440,18 +441,26 @@ class Warmane(unittest.TestCase):
                 print("MFA wasn't requested")
                 pass
         else:
-            self.driver.switch_to.default_content()
+            intercept = True
+            while intercept == True:
+                try:
+                    self.driver.switch_to.default_content()
+                    self.driver.find_element_by_id("userID").send_keys(self.warmane_acc)
+                    self.driver.find_element_by_id("userPW").send_keys(self.warmane_pass)
+                    self.driver.find_element_by_xpath("//button[@type='submit']").click()
+                    intercept = False
 
-            self.driver.find_element_by_id("userID").send_keys(self.warmane_acc)
-            self.driver.find_element_by_id("userPW").send_keys(self.warmane_pass)
-            try:
-                self.driver.find_element_by_xpath("//button[@type='submit']").click()
-            except:
-                self.driver.refresh()
-                self.captcha(5)
-                self.driver.find_element_by_id("userID").send_keys(self.warmane_acc)
-                self.driver.find_element_by_id("userPW").send_keys(self.warmane_pass)
-                self.driver.find_element_by_xpath("//button[@type='submit']").click()
+                except ElementClickInterceptedException:
+                    self.driver.refresh()
+                    self.captcha(5)
+                    self.driver.switch_to.default_content()
+                    self.driver.find_element_by_id("userID").send_keys(self.warmane_acc)
+                    self.driver.find_element_by_id("userPW").send_keys(self.warmane_pass)
+                    self.driver.find_element_by_xpath("//button[@type='submit']").click()
+                    intercept = False
+
+                except:
+                    pass
 
             print("Added UserID and Password and clicked on login")
             self.driver.implicitly_wait(10)
