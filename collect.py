@@ -451,6 +451,7 @@ class Warmane(unittest.TestCase):
                     intercept = False
 
                 except ElementClickInterceptedException:
+                    print("Click interception happened retrying captcha.")
                     self.driver.refresh()
                     self.captcha(5)
                     self.driver.switch_to.default_content()
@@ -458,9 +459,6 @@ class Warmane(unittest.TestCase):
                     self.driver.find_element_by_id("userPW").send_keys(self.warmane_pass)
                     self.driver.find_element_by_xpath("//button[@type='submit']").click()
                     intercept = False
-
-                except:
-                    pass
 
             print("Added UserID and Password and clicked on login")
             self.driver.implicitly_wait(10)
