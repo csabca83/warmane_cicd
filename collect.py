@@ -479,14 +479,20 @@ class Warmane(unittest.TestCase):
         self.driver.implicitly_wait(10)
 
         try:
+            points_before = self.driver.find_element_by_class_name("myPoints")
             self.driver.find_element_by_link_text("Collect points").click()
-            print("Daily points collected successfully")
-            self.log_list.append("Daily points collected successfully")
             self.driver.refresh()
             self.driver.implicitly_wait(10)
             current_points = self.driver.find_element_by_class_name("myPoints")
-            self.log_list.append(f"Your current points are: {current_points.text}")
-            self.log_list.append("------------------")
+            if points_before == current_points:
+                self.log_list.append("You have not logged in-game today")
+                self.log_list.append(f"Your current points are: {current_points.text}")
+                self.log_list.append("------------------")                
+            else:
+                print("Daily points collected successfully")
+                self.log_list.append("Daily points collected successfully")
+                self.log_list.append(f"Your current points are: {current_points.text}")
+                self.log_list.append("------------------")
             #self.save_cookies()
             #print("Cookies were saved")
         except NoSuchElementException:
