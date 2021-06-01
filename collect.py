@@ -480,11 +480,12 @@ class Warmane(unittest.TestCase):
 
         try:
             points_before = self.driver.find_element_by_class_name("myPoints")
+            points_before = points_before.text
             self.driver.find_element_by_link_text("Collect points").click()
             self.driver.refresh()
             self.driver.implicitly_wait(10)
             current_points = self.driver.find_element_by_class_name("myPoints")
-            if (points_before.text) == (current_points.text):
+            if (points_before) == (current_points.text):
                 self.log_list.append("You have not logged in-game today")
                 self.log_list.append(f"Your current points are: {current_points.text}")
                 self.log_list.append("------------------")                
