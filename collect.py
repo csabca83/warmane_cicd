@@ -65,6 +65,7 @@ class Warmane(unittest.TestCase):
         self.options = webdriver.FirefoxOptions()
         self.options.headless = self.headless
         self.options.binary_location = os.environ.get("FIREFOX_BIN")
+        self.options = 
 
     # Enable Marionette, An automation driver for Mozilla's Gecko engine
     def setUpCapabilities(self):
@@ -81,10 +82,12 @@ class Warmane(unittest.TestCase):
             self.stop_s3 = True
             self.capabilities['proxy'] = {
             "proxyType": "MANUAL",
-            "httpProxy": proxy,
+            #"httpProxy": proxy,
+            "httpProxy": "http://jager1888:HXUNoKC8gh@45.237.171.53:45188",
             "ftpProxy": proxy,
             "sslProxy": proxy
         }
+        print(self.capabilities['proxy'])
         setting_up = True
 
         while setting_up == True:
