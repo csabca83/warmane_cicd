@@ -65,7 +65,6 @@ class Warmane(unittest.TestCase):
         self.options = webdriver.FirefoxOptions()
         self.options.headless = self.headless
         self.options.binary_location = os.environ.get("FIREFOX_BIN")
-        self.options = 
 
     # Enable Marionette, An automation driver for Mozilla's Gecko engine
     def setUpCapabilities(self):
