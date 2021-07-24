@@ -86,7 +86,8 @@ class Warmane(unittest.TestCase):
             "ftpProxy": proxy,
             "sslProxy": proxy
         }
-        print(self.capabilities['proxy'])
+            print(self.capabilities['proxy'])
+        
         setting_up = True
 
         while setting_up == True:
