@@ -78,15 +78,13 @@ class Warmane(unittest.TestCase):
         if proxy == 0:
             pass
         else:
-            proxy = "45.237.171.53:45188"
             self.stop_s3 = True
             self.capabilities['proxy'] = {
-            "proxyType": ProxyType.MANUAL,
+            "proxyType": "MANUAL",
             "httpProxy": proxy,
             "ftpProxy": proxy,
             "sslProxy": proxy
-            }
-        
+        }
         setting_up = True
 
         while setting_up == True:
