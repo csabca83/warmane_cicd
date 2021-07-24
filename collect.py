@@ -57,7 +57,7 @@ class Warmane(unittest.TestCase):
     stop_s3 = False
     headless = True
     options = None
-    profile = webdriver.FirefoxProfile()
+    profile = None
     capabilities = None
 
     # Setup options for webdriver
@@ -78,6 +78,7 @@ class Warmane(unittest.TestCase):
         if proxy == 0:
             pass
         else:
+            proxy = "45.237.171.53:45188"
             self.stop_s3 = True
             self.capabilities['proxy'] = {
             "proxyType": ProxyType.MANUAL,
@@ -90,14 +91,6 @@ class Warmane(unittest.TestCase):
 
         while setting_up == True:
             try:
-
-                self.profile.set_preference('network.proxy.type', 1)
-                self.profile.set_preference("network.proxy.http", "45.237.171.53")
-                self.profile.set_preference("network.proxy.http_port", "45188")
-                self.profile.set_preference("network.proxy.socks_username", "jager1888")
-                self.profile.set_preference("network.proxy.socks_password", "HXUNoKC8gh")
-                self.profile.update_preferences()
-
                 self.driver = webdriver.Firefox(options=self.options,
                                                 capabilities=self.capabilities,
                                                 firefox_profile=self.profile, 
