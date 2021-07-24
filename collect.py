@@ -58,12 +58,6 @@ class Warmane(unittest.TestCase):
     headless = True
     options = None
     profile = webdriver.FirefoxProfile()
-    profile.set_preference('network.proxy.type', 1)
-    profile.set_preference("network.proxy.http", "45.237.171.53")
-    profile.set_preference("network.proxy.http_port", "45188")
-    profile.set_preference("network.proxy.socks_username", "jager1888")
-    profile.set_preference("network.proxy.socks_password", "HXUNoKC8gh")
-    profile.update_preferences()
     capabilities = None
 
     # Setup options for webdriver
@@ -96,6 +90,14 @@ class Warmane(unittest.TestCase):
 
         while setting_up == True:
             try:
+
+                self.profile.set_preference('network.proxy.type', 1)
+                self.profile.set_preference("network.proxy.http", "45.237.171.53")
+                self.profile.set_preference("network.proxy.http_port", "45188")
+                self.profile.set_preference("network.proxy.socks_username", "jager1888")
+                self.profile.set_preference("network.proxy.socks_password", "HXUNoKC8gh")
+                self.profile.update_preferences()
+
                 self.driver = webdriver.Firefox(options=self.options,
                                                 capabilities=self.capabilities,
                                                 firefox_profile=self.profile, 
