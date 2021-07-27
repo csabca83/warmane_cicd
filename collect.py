@@ -82,7 +82,6 @@ class Warmane(unittest.TestCase):
             self.capabilities['proxy'] = {
             "proxyType": "MANUAL",
             "httpProxy": proxy,
-            "ftpProxy": proxy,
             "sslProxy": proxy
             }
         setting_up = True
