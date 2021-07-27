@@ -84,7 +84,7 @@ class Warmane(unittest.TestCase):
             "httpProxy": proxy,
             "ftpProxy": proxy,
             "sslProxy": proxy
-        }
+            }
         setting_up = True
 
         while setting_up == True:
@@ -94,7 +94,8 @@ class Warmane(unittest.TestCase):
                                                 firefox_profile=self.profile, 
                                                 executable_path="./geckodriver")
                 setting_up = False
-            except:
+            except Exception as e:
+                print(e)
                 self.driver.quit()
                 print("Driver unexpectedly closed, retrying....")
         
