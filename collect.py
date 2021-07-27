@@ -10,7 +10,8 @@ from datetime import datetime
 from time import sleep, time
 from random import uniform, randint
 from pydub import AudioSegment
-from selenium import webdriver
+#from selenium import webdriver
+from seleniumwire import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
@@ -86,9 +87,16 @@ class Warmane(unittest.TestCase):
             }
         setting_up = True
 
+        sw_options = {
+            'proxy': {
+                'http': 'http://jager1888:HXUNoKC8gh@45.237.171.53:45188'
+            }
+        }
+
         while setting_up == True:
             try:
                 self.driver = webdriver.Firefox(options=self.options,
+                                                seleniumwire_options = sw_options,
                                                 capabilities=self.capabilities,
                                                 firefox_profile=self.profile, 
                                                 executable_path="./geckodriver")
