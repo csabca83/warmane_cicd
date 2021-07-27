@@ -95,6 +95,7 @@ class Warmane(unittest.TestCase):
                                                 executable_path="./geckodriver")
                 setting_up = False
             except:
+                self.driver.quit()
                 print("Driver unexpectedly closed, retrying....")
         
         self.driver.set_page_load_timeout(20)
