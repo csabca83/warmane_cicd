@@ -71,7 +71,7 @@ class Warmane(unittest.TestCase):
         self.capabilities = webdriver.DesiredCapabilities.FIREFOX
         self.capabilities['marionette'] = True
 
-    # Setup settings
+    #  Setup settings
     def setUp(self, proxy=default_page_proxy):
         self.setUpOptions()
         self.setUpCapabilities()
