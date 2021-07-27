@@ -70,6 +70,7 @@ class Warmane(unittest.TestCase):
     def setUpCapabilities(self):
         self.capabilities = webdriver.DesiredCapabilities.FIREFOX
         self.capabilities['marionette'] = True
+        self.capabilities["pageLoadStrategy"] = "eager"
 
     #  Setup settings
     def setUp(self, proxy=default_page_proxy):
