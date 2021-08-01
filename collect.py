@@ -95,7 +95,10 @@ class Warmane(unittest.TestCase):
                 setting_up = False
             except Exception as e:
                 print(e)
-                self.driver.quit()
+                try:
+                    self.driver.quit()
+                except Exception:
+                    pass
                 print("Driver unexpectedly closed, retrying....")
         
         self.driver.set_page_load_timeout(20)
