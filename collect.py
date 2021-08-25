@@ -72,7 +72,7 @@ class Warmane(unittest.TestCase):
         self.capabilities = webdriver.DesiredCapabilities.FIREFOX
         self.capabilities['marionette'] = True
 
-    # Setup settings
+    #  Setup settings
     def setUp(self, proxy=default_page_proxy):
         self.setUpOptions()
         self.setUpCapabilities()
@@ -83,9 +83,8 @@ class Warmane(unittest.TestCase):
             self.capabilities['proxy'] = {
             "proxyType": "MANUAL",
             "httpProxy": proxy,
-            "ftpProxy": proxy,
             "sslProxy": proxy
-        }
+            }
         setting_up = True
 
         while setting_up == True:
@@ -95,7 +94,12 @@ class Warmane(unittest.TestCase):
                                                 firefox_profile=self.profile, 
                                                 executable_path="./geckodriver")
                 setting_up = False
-            except:
+            except Exception as e:
+                print(e)
+                try:
+                    self.driver.quit()
+                except Exception:
+                    pass
                 print("Driver unexpectedly closed, retrying....")
         
         self.driver.set_page_load_timeout(20)
