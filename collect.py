@@ -3,6 +3,7 @@
 import unittest
 import sys, time
 from googleauthenticator import get_mfa
+from lxml.html import fromstring
 import numpy as np
 import scipy.interpolate as si
 from bs4 import BeautifulSoup
@@ -179,23 +180,20 @@ class Warmane(unittest.TestCase):
     def get_proxies(self):
 
         try:
-            proxy_listed = []
-            res = requests.get('https://free-proxy-list.net/', headers={'User-Agent':'Mozilla/5.0'})
-            soup = BeautifulSoup(res.text,"lxml")
-            for items in soup.select("#proxylisttable tbody tr"):
+            url = 'https://free-proxy-list.net/'
+            response = requests.get(url)
+            parser = fromstring(response.text)
+            proxies = []
+            for i in parser.xpath('//tbody/tr')[:299]:   #299 proxies max
+                proxy = ":".join([i.xpath('.//td[1]/text()') 
+                [0],i.xpath('.//td[2]/text()')[0]])
+                proxies.append(proxy)
 
-                for item in items.select("td", class_="hx sorting_1")[::6]:
-                    if "yes" in item.text:
-                        proxy_list = ':'.join([item.text for item in items.select("td")[:2]])
-                        proxy_listed.append(proxy_list)
-
-                    else:
-                        pass
-            ip_range = len(proxy_listed)
+            ip_range = len(proxies)
 
             random_proxy = random.randint(0, ip_range)
 
-            selected_proxy = proxy_listed[random_proxy]
+            selected_proxy = proxies[random_proxy]
 
             print(f"The following proxy were selected: {selected_proxy}")
 
