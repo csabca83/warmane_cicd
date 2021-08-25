@@ -202,7 +202,7 @@ class Warmane(unittest.TestCase):
             print(f"The following proxy were selected: {selected_proxy}")
 
             return selected_proxy
-
+#
         except:
             time.sleep(10)
             self.get_proxies()
