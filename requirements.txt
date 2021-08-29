@@ -54,7 +54,7 @@ selenium==3.141.0
 six==1.14.0
 soupsieve==2.0.1
 toml==0.10.2
-urllib3==1.25.10
+urllib3==1.26.5
 virtualenv==20.7.2
 webdriver-manager==3.2.2
 webencodings==0.5.1
