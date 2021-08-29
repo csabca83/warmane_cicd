@@ -40,8 +40,3 @@ def prefix0(h):
     if len(h) < 6:
         h = '0'*(6-len(h)) + h
     return h
-
-
-def test_key():
-    get_totp_token("NQYVIS2VNU7GKTKU")
-    assert True
