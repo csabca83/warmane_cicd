@@ -38,7 +38,7 @@ class Warmane(unittest.TestCase):
     warmane_acc = os.environ.get("warmane_acc")
     warmane_pass = os.environ.get("warmane_pass")
     access_token = os.environ.get("ACCESS_TOKEN")
-    psid = os.environ.get("CSABI")
+    psid = os.environ.get("FB_ID")
     ack = os.environ.get("ACK")
     sck = os.environ.get("SCK")
     MFA = os.environ.get("mfa")
