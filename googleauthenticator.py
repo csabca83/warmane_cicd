@@ -7,7 +7,6 @@ import hashlib
 import time
 
 
-# final test
 def get_hotp_token(secret, intervals_no):
 
     """This is where the magic happens."""
