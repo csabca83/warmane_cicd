@@ -3,11 +3,11 @@
 
 import unittest
 import os
-import boto3
+# import boto3
 import json
 import requests
 import random
-import pickle
+# import pickle
 import numpy as np
 import scipy.interpolate as si
 from googleauthenticator import get_totp_token as get_mfa
@@ -49,15 +49,15 @@ class Warmane(unittest.TestCase):
     proxy = 0
     cookies = "cookies.txt"
     cookie_worked = False
-    s3 = boto3.resource(
-        's3',
-        aws_access_key_id=ack,
-        aws_secret_access_key=sck
-        )
-    obj = s3.Object(
-        'bucket-for-cookies',
-        'cookies.txt'
-        )
+    # s3 = boto3.resource(
+    #     's3',
+    #     aws_access_key_id=ack,
+    #     aws_secret_access_key=sck
+    #     )
+    # obj = s3.Object(
+    #     'bucket-for-cookies',
+    #     'cookies.txt'
+    #     )
     stop_s3 = False
     headless = True
     options = None
@@ -109,38 +109,38 @@ class Warmane(unittest.TestCase):
 
         self.driver.set_page_load_timeout(20)
 
-    def save_cookies(self):
-        self.obj.delete()
+    # def save_cookies(self):
+    #     self.obj.delete()
 
-        with open(self.cookies, "wb") as f:
-            pickle.dump(self.driver.get_cookies(), f)
+    #     with open(self.cookies, "wb") as f:
+    #         pickle.dump(self.driver.get_cookies(), f)
 
-        with open('cookies.txt', 'rb') as data:
-            self.obj.upload_fileobj(data)
+    #     with open('cookies.txt', 'rb') as data:
+    #         self.obj.upload_fileobj(data)
 
-    def load_cookies(self):
+    # def load_cookies(self):
 
-        if self.stop_s3 is False:
-            with open('cookies.txt', 'wb') as data:
-                self.obj.download_fileobj(data)
+    #     if self.stop_s3 is False:
+    #         with open('cookies.txt', 'wb') as data:
+    #             self.obj.download_fileobj(data)
 
-            print("Got cookies from S3")
-        else:
-            pass
-        try:
-            with open(self.cookies, "rb") as f:
-                cookies = pickle.load(f)
-            self.driver.delete_all_cookies()
-            # have to be on a page before you can
-            # add any cookies, any page - does not matter which
-            for cookie in cookies:
-                # Checks if the instance expiry a float
-                if isinstance(cookie.get('expiry'), float):
-                    # it converts expiry cookie to an int
-                    cookie['expiry'] = int(cookie['expiry'])
-                self.driver.add_cookie(cookie)
-        except Exception:
-            print("No cookies found")
+    #         print("Got cookies from S3")
+    #     else:
+    #         pass
+    #     try:
+    #         with open(self.cookies, "rb") as f:
+    #             cookies = pickle.load(f)
+    #         self.driver.delete_all_cookies()
+    #         have to be on a page before you can
+    #         add any cookies, any page - does not matter which
+    #         for cookie in cookies:
+    #             Checks if the instance expiry a float
+    #             if isinstance(cookie.get('expiry'), float):
+    #                 it converts expiry cookie to an int
+    #                 cookie['expiry'] = int(cookie['expiry'])
+    #             self.driver.add_cookie(cookie)
+    #     except Exception:
+    #         print("No cookies found")
 
     def send_text_message(self, message):
 
