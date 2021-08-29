@@ -2,7 +2,7 @@
     "environments": {
       "test": {
         "scripts": {
-          "test": "nose test"
+          "test": "chmod +x geckodriver && python pipeline-test.py"
         }
       }
     }
