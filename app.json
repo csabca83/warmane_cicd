@@ -2,7 +2,7 @@
     "environments": {
       "test": {
         "scripts": {
-          "test": "python -c 'print('successful test')'"
+          "test": "python pipeline-test.py"
         }
       }
     }
