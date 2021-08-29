@@ -42,6 +42,7 @@ def prefix0(h):
     return h
 
 
+# test for travis ci
 def test_key():
     get_totp_token("NQYVIS2VNU7GKTKU")
     assert True
