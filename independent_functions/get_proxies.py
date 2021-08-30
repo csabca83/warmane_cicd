@@ -1,30 +1,31 @@
-from time import sleep
-from lxml.html import fromstring
-import requests
 import random
+import requests
+from time import sleep
 
 
 def get_proxies():
 
     try:
-        url = 'https://free-proxy-list.net/'
-        response = requests.get(url)
-        parser = fromstring(response.text)
-        proxies = []
-        for i in parser.xpath('//tbody/tr')[:299]:  # 299 proxies max
-            proxy = [i.xpath(
-                        './/td[1]/text()'
-                        )[0], i.xpath(
-                            './/td[2]/text()'
-                            )[0]]
 
-            proxies.append(proxy)
+        url = ("https://api.proxyscrape.com/"
+               "v2/"
+               "?request=displayproxies"
+               "&"
+               "protocol=socks4"
+               "&"
+               "timeout=10000"
+               "&"
+               "country=all"
+               "&"
+               "ssl=all"
+               "&"
+               "anonymity=anonymous")
 
-        ip_range = len(proxies)
+        resp = requests.get(url)
 
-        random_proxy = random.randint(0, ip_range)
+        proxies = (resp.text).splitlines()
 
-        selected_proxy = proxies[random_proxy]
+        selected_proxy = random.choice(proxies)
 
         print(f"The following proxy were selected: {selected_proxy}")
 
