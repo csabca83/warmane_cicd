@@ -13,13 +13,13 @@ def get_proxies():
                "&"
                "protocol=socks4"
                "&"
-               "timeout=10000"
+               "timeout=100"
                "&"
                "country=all"
                "&"
                "ssl=all"
                "&"
-               "anonymity=anonymous")
+               "anonymity=elite")
 
         resp = requests.get(url)
 
