@@ -74,18 +74,29 @@ class Warmane(unittest.TestCase):
         self.capabilities['marionette'] = True
 
     #  Setup settings
-    def setUp(self, proxy=default_page_proxy):
+    def setUp(self,
+              proxy=default_page_proxy,
+              proxy_port=default_page_proxy):
+
         self.setUpOptions()
         self.setUpCapabilities()
         if proxy == 0:
             pass
         else:
             self.stop_s3 = True
-            self.capabilities['proxy'] = {
-                "proxyType": "MANUAL",
-                "httpProxy": proxy,
-                "sslProxy": proxy
-                }
+            self.profile = webdriver.FirefoxProfile()
+            self.profile.set_preference(
+                "browser.privatebrowsing.autostart",
+                True
+                )
+            self.profile.set_preference(
+                "network.proxy.http",
+                proxy
+                )
+            self.profile.set_preference(
+                "network.proxy.http_port",
+                proxy_port
+                )
         setting_up = True
 
         while setting_up is True:
@@ -214,8 +225,8 @@ class Warmane(unittest.TestCase):
 
                 else:
 
-                    proxy = get_proxies()
-                    self.setUp(proxy)
+                    proxy, proxy_port = get_proxies()
+                    self.setUp(proxy, proxy_port)
                     self.captcha(n-1)
             try:
                 self.driver.find_element_by_id("userID")
