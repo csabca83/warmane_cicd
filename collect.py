@@ -8,13 +8,11 @@ import json
 import requests
 import random
 # import pickle
-import numpy as np
-import scipy.interpolate as si
-from googleauthenticator import get_totp_token as get_mfa
-from lxml.html import fromstring
-from datetime import datetime
+from independent_functions.googleauthenticator import get_totp_token as get_mfa
+from independent_functions.get_proxies import get_proxies
+from independent_functions.wait_between import wait_between
+from independent_functions.human_like_mouse_move import human_like_mouse_move
 from time import sleep
-from random import uniform
 from pydub import AudioSegment
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
@@ -198,88 +196,6 @@ class Warmane(unittest.TestCase):
             for data in content.iter_content():
                 handle.write(data)
 
-    def get_proxies(self):
-
-        try:
-            url = 'https://free-proxy-list.net/'
-            response = requests.get(url)
-            parser = fromstring(response.text)
-            proxies = []
-            for i in parser.xpath('//tbody/tr')[:299]:  # 299 proxies max
-                proxy = ":".join(
-                    [i.xpath(
-                        './/td[1]/text()'
-                        )[0], i.xpath(
-                             './/td[2]/text()'
-                             )[0]]
-                             )
-                proxies.append(proxy)
-
-            ip_range = len(proxies)
-
-            random_proxy = random.randint(0, ip_range)
-
-            selected_proxy = proxies[random_proxy]
-
-            print(f"The following proxy were selected: {selected_proxy}")
-
-            return selected_proxy
-
-        except Exception:
-            sleep(10)
-            self.get_proxies()
-
-    # Simple logging method
-    def log(self, s, t=None):
-        now = datetime.now()
-        if t is None:
-            t = "Main"
-        print("%s :: %s -> %s " % (str(now), t, s))
-
-    # Use sleep for waiting and uniform for randomizing
-    def wait_between(self, a, b):
-        rand = uniform(a, b)
-        sleep(rand)
-
-    # Using B-spline for simulate humane like mouse movments
-    def human_like_mouse_move(self, action, start_element):
-        points = [[6, 2], [3, 2], [0, 0], [0, 2]]
-        points = np.array(points)
-        x = points[:, 0]
-        y = points[:, 1]
-
-        t = range(len(points))
-        ipl_t = np.linspace(0.0, len(points) - 1, 100)
-
-        x_tup = si.splrep(t, x, k=1)
-        y_tup = si.splrep(t, y, k=1)
-
-        x_list = list(x_tup)
-        xl = x.tolist()
-        x_list[1] = xl + [0.0, 0.0, 0.0, 0.0]
-
-        y_list = list(y_tup)
-        yl = y.tolist()
-        y_list[1] = yl + [0.0, 0.0, 0.0, 0.0]
-
-        x_i = si.splev(ipl_t, x_list)
-        y_i = si.splev(ipl_t, y_list)
-
-        startElement = start_element
-
-        action.move_to_element(startElement)
-        action.perform()
-
-        c = 5  # change it for more move
-        i = 0
-        for mouse_x, mouse_y in zip(x_i, y_i):
-            action.move_by_offset(mouse_x, mouse_y)
-            action.perform()
-            self.log("Move mouse to, %s ,%s" % (mouse_x, mouse_y))
-            i += 1
-            if i == c:
-                break
-
     def captcha(self, n):
 
         try:
@@ -298,7 +214,7 @@ class Warmane(unittest.TestCase):
 
                 else:
 
-                    proxy = self.get_proxies()
+                    proxy = get_proxies()
                     self.setUp(proxy)
                     self.captcha(n-1)
             try:
@@ -339,7 +255,7 @@ class Warmane(unittest.TestCase):
                             'recaptcha-anchor'
                             )
                         action = ActionChains(self.driver)
-                        self.human_like_mouse_move(action, audioBtn)
+                        human_like_mouse_move(action, audioBtn)
                         audioBtn.click()
 
                         audioBtnFound = True
@@ -446,7 +362,7 @@ class Warmane(unittest.TestCase):
                             self.captcha(n-1)
 
                         else:
-                            proxy = self.get_proxies()
+                            proxy = get_proxies()
                             self.setUp(proxy)
                             self.captcha(n-1)
                 else:
@@ -464,7 +380,7 @@ class Warmane(unittest.TestCase):
 
                     else:
 
-                        proxy = self.get_proxies()
+                        proxy = get_proxies()
                         self.setUp(proxy)
                         self.captcha(n-1)
         except Exception:
@@ -490,7 +406,7 @@ class Warmane(unittest.TestCase):
 
             else:
 
-                proxy = self.get_proxies()
+                proxy = get_proxies()
                 self.setUp(proxy)
                 self.captcha(n-1)
 
@@ -621,7 +537,7 @@ class Warmane(unittest.TestCase):
         self.driver.quit()
 
     def tearDown(self):
-        self.wait_between(10.13, 15.05)
+        wait_between(10.13, 15.05)
 
 
 if __name__ == "__main__":
