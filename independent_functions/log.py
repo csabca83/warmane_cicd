@@ -7,3 +7,5 @@ def log(s, t=None):
     if t is None:
         t = "Main"
     print("%s :: %s -> %s " % (str(now), t, s))
+
+    return True

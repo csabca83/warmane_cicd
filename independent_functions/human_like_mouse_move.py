@@ -41,3 +41,5 @@ def human_like_mouse_move(action, start_element):
         i += 1
         if i == c:
             break
+
+    return True

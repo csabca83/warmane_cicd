@@ -6,3 +6,5 @@ from time import sleep
 def wait_between(a, b):
     rand = uniform(a, b)
     sleep(rand)
+
+    return True
