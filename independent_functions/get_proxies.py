@@ -12,13 +12,12 @@ def get_proxies():
         parser = fromstring(response.text)
         proxies = []
         for i in parser.xpath('//tbody/tr')[:299]:  # 299 proxies max
-            proxy = ":".join(
-                [i.xpath(
-                    './/td[1]/text()'
-                    )[0], i.xpath(
+            proxy = [i.xpath(
+                        './/td[1]/text()'
+                        )[0], i.xpath(
                             './/td[2]/text()'
                             )[0]]
-                            )
+
             proxies.append(proxy)
 
         ip_range = len(proxies)
