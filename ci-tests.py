@@ -1,5 +1,5 @@
 from independent_functions.googleauthenticator import get_totp_token
-from independent_functions.get_proxies import get_proxies
+# from independent_functions.get_proxies import get_proxies
 from independent_functions.human_like_mouse_move import human_like_mouse_move
 from independent_functions.log import log
 from independent_functions.wait_between import wait_between
@@ -13,8 +13,8 @@ def test_get_totp_token():
     assert get_totp_token(RANDOM_MFA)
 
 
-def test_get_proxies():
-    assert get_proxies()
+# def test_get_proxies():
+#    assert get_proxies()
 
 
 def test_human_like_mouse_move():
