@@ -456,7 +456,7 @@ class Warmane(unittest.TestCase):
                     print(
                         "Click interception happened retrying captcha."
                         )
-                    self.driver.refresh()
+                    self.driver.get(self.startpage)
                     self.captcha(5)
                     self.driver.switch_to.default_content()
                     self.driver.find_element_by_id(
@@ -476,6 +476,9 @@ class Warmane(unittest.TestCase):
                         intercept = False
 
                     except ElementClickInterceptedException:
+                        proxy = get_proxies()
+                        self.setUp(proxy)
+                        self.captcha(5)
                         intercept = True
 
                 except Exception:
