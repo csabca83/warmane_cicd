@@ -30,7 +30,10 @@ def proxy_health_check(proxy):
         time_result = str(end - start)
 
         if resp.status_code == 200:
-            print(f"{proxy} - HEALTHY - {resp.status_code} - {time_result}")
+            print(
+                '{: <20}{: <9}{: <15}{: <14}'.format(
+                    proxy, 'HEALTHY', '200', time_result)
+                    )
             return proxy
 
         else:

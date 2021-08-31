@@ -61,6 +61,7 @@ class Warmane(unittest.TestCase):
     options = None
     profile = None
     capabilities = None
+    captcha_retries = 15
 
     # Setup options for webdriver
     def setUpOptions(self):
@@ -423,7 +424,7 @@ class Warmane(unittest.TestCase):
 
     # Main function
     def test_run(self):
-        self.captcha(10)
+        self.captcha(self.captcha_retries)
 
         if self.cookie_worked is True:
             try:
@@ -456,33 +457,20 @@ class Warmane(unittest.TestCase):
                     print(
                         "Click interception happened retrying captcha."
                         )
-                    self.driver.get(self.startpage)
-                    self.captcha(5)
-                    self.driver.switch_to.default_content()
-                    self.driver.find_element_by_id(
-                        "userID"
-                        ).send_keys(
-                            self.warmane_acc
-                            )
-                    self.driver.find_element_by_id(
-                        "userPW"
-                        ).send_keys(
-                            self.warmane_pass
-                            )
-                    try:
-                        self.driver.find_element_by_xpath(
-                            "//button[@type='submit']"
-                            ).click()
-                        intercept = False
+                    self.driver.quit()
 
-                    except ElementClickInterceptedException:
-                        proxy = get_proxies()
-                        self.setUp(proxy)
-                        self.captcha(5)
-                        intercept = True
+                    proxy = get_proxies()
+                    self.setUp(proxy)
+
+                    self.driver.get(self.startpage)
+
+                    self.captcha_retries -= 1
+                    self.captcha(self.captcha_retries)
+
+                    intercept = True
 
                 except Exception:
-                    pass
+                    intercept = True
 
             print(
                 "Added UserID and Password and clicked on login"
