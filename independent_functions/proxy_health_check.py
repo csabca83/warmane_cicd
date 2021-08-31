@@ -23,7 +23,7 @@ def proxy_health_check(proxy):
         start = datetime.now()
         resp = s.send(
             prepped,
-            timeout=0.05
+            timeout=0.3
             )
         end = datetime.now()
         time_result = str(end - start)
