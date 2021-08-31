@@ -43,6 +43,7 @@ def get_proxies():
                     healthy_proxies.append(result)
 
         if healthy_proxies == []:
+            print("None of the proxies met with the defined latency")
             raise Exception
 
         healthy_proxies = random.choice(healthy_proxies)
