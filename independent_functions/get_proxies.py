@@ -3,6 +3,7 @@ import requests
 from time import sleep
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from independent_functions.proxy_health_check import proxy_health_check
+import concurrent.futures.thread as threads
 
 
 def get_proxies():
@@ -42,6 +43,7 @@ def get_proxies():
                 if result:
                     healthy_proxies.append(result)
 
+        threads._threads_queues.clear()
         if healthy_proxies == []:
             print("None of the proxies met with the defined latency")
             raise Exception
