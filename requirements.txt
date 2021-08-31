@@ -1,4 +1,6 @@
 appdirs==1.4.3
+atomicwrites==1.4.0
+attrs==21.2.0
 backports.entry-points-selectable==1.1.0
 beautifulsoup4==4.9.1
 boto3==1.18.31
@@ -23,6 +25,7 @@ gunicorn==20.0.4
 html5lib==1.0.1
 identify==2.2.13
 idna==2.10
+iniconfig==1.1.1
 ipaddr==2.2.0
 itsdangerous==1.1.0
 Jinja2==2.11.3
@@ -37,12 +40,15 @@ numpy==1.19.5
 packaging==20.3
 pep517==0.8.2
 platformdirs==2.2.0
+pluggy==0.13.1
 pre-commit==2.14.1
 progress==1.5
+py==1.10.0
 pycodestyle==2.7.0
 pydub==0.24.1
 pyflakes==2.3.1
 pyparsing==2.4.6
+PySocks==1.7.1
 python-dateutil==2.8.2
 pytoml==0.1.21
 PyYAML==5.4.1
