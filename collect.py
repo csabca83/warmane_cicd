@@ -116,7 +116,7 @@ class Warmane(unittest.TestCase):
                     pass
                 print("Driver unexpectedly closed, retrying....")
 
-        self.driver.set_page_load_timeout(40)
+        self.driver.set_page_load_timeout(15)
 
     # def save_cookies(self):
     #     self.obj.delete()
@@ -423,7 +423,7 @@ class Warmane(unittest.TestCase):
 
     # Main function
     def test_run(self):
-        self.captcha(5)
+        self.captcha(10)
 
         if self.cookie_worked is True:
             try:

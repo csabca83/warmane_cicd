@@ -7,19 +7,22 @@ def get_proxies():
 
     try:
 
-        url = ("https://api.proxyscrape.com/"
-               "v2/"
-               "?request=displayproxies"
-               "&"
-               "protocol=socks4"
-               "&"
-               "timeout=100"
-               "&"
-               "country=all"
-               "&"
-               "ssl=all"
-               "&"
-               "anonymity=elite")
+        url = (
+            "https://api.proxyscrape.com/"
+            "v2/"
+            "?"
+            "request=displayproxies"
+            "&"
+            "protocol=socks4"
+            "&"
+            "timeout=10000"
+            "&"
+            "country=all"
+            "&"
+            "ssl=all"
+            "&"
+            "anonymity=elite"
+            )
 
         resp = requests.get(url)
 
