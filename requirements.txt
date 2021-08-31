@@ -49,7 +49,6 @@ pydub==0.24.1
 pyflakes==2.3.1
 pyparsing==2.4.6
 PySocks==1.7.1
-pytest==6.2.4
 python-dateutil==2.8.2
 pytoml==0.1.21
 PyYAML==5.4.1
