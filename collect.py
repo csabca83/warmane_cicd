@@ -469,10 +469,14 @@ class Warmane(unittest.TestCase):
                         ).send_keys(
                             self.warmane_pass
                             )
-                    self.driver.find_element_by_xpath(
-                        "//button[@type='submit']"
-                        ).click()
-                    intercept = False
+                    try:
+                        self.driver.find_element_by_xpath(
+                            "//button[@type='submit']"
+                            ).click()
+                        intercept = False
+
+                    except ElementClickInterceptedException:
+                        intercept = True
 
                 except Exception:
                     pass
