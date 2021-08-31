@@ -1,39 +1,59 @@
 import random
 import requests
 from time import sleep
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from independent_functions.proxy_health_check import proxy_health_check
+import concurrent.futures.thread as threads
 
 
 def get_proxies():
 
     try:
 
-        url = (
-            "https://api.proxyscrape.com/"
-            "v2/"
-            "?"
-            "request=displayproxies"
-            "&"
-            "protocol=socks4"
-            "&"
-            "timeout=10000"
-            "&"
-            "country=all"
-            "&"
-            "ssl=all"
-            "&"
-            "anonymity=elite"
-            )
+        url = ("https://api.proxyscrape.com/"
+               "v2/"
+               "?"
+               "request=displayproxies"
+               "&"
+               "protocol=socks4"
+               "&"
+               "timeout=100"
+               "&"
+               "country=all"
+               "&"
+               "ssl=all"
+               "&"
+               "anonymity=elite")
 
         resp = requests.get(url)
 
         proxies = (resp.text).splitlines()
+        random.shuffle(proxies)
+        pool_number = len(proxies)
+        healthy_proxies = []
 
-        selected_proxy = random.choice(proxies)
+        with ThreadPoolExecutor(max_workers=pool_number) as executor:
+            futures = [
+                executor.submit(proxy_health_check, proxy)
+                for proxy in proxies
+                ]
 
-        print(f"The following proxy were selected: {selected_proxy}")
+            for future in as_completed(futures):
+                result = future.result()
+                if result:
+                    healthy_proxies.append(result)
+                    threads._threads_queues.clear()
+                    break
 
-        return selected_proxy
+        if healthy_proxies == []:
+            raise Exception
+
+        healthy_proxies = random.choice(healthy_proxies)
+
+        print(f"The following proxy were selected: {healthy_proxies}")
+
+        return healthy_proxies
 
     except Exception:
-        sleep(10)
+        sleep(5)
         get_proxies()
