@@ -30,6 +30,10 @@ def get_proxies():
         random.shuffle(proxies)
         pool_number = len(proxies)
         healthy_proxies = []
+        print(
+            '{: <20}{: <9}{: <15}{: <14}'.format(
+                'IP', 'HEALTH', 'RESP', 'MS')
+        )
 
         with ThreadPoolExecutor(max_workers=pool_number) as executor:
             futures = [
