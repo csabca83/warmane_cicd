@@ -233,14 +233,12 @@ class Warmane(unittest.TestCase):
             try:
                 self.driver.find_element_by_id("userID")
                 print("Cookies are no longer working for this website")
-            except Exception:
+            except NoSuchElementException:
                 print("Cookies were loaded up successfully")
                 self.cookie_worked = True
                 sleep(2)
 
-            if self.cookie_worked is True:
-                pass
-            else:
+            if self.cookie_worked is not True:
 
                 print("Opened the startpage, "
                       "checking the iframes for recaptcha")
@@ -460,19 +458,11 @@ class Warmane(unittest.TestCase):
                         ).click()
                     intercept = False
 
-                except TimeoutException:
-                    intercept = False
-                    self.driver.quit()
-                    proxy = get_proxies()
-                    self.setUp(proxy)
-
-                    self.captcha_retries -= 1
-
-                    self.test_run()
-
-                except ElementClickInterceptedException:
+                except ElementClickInterceptedException or \
+                        TimeoutException:
                     print(
-                        "Click interception happened retrying captcha."
+                        "Click/Timeout interception"
+                        " happened retrying captcha."
                         )
                     self.driver.quit()
 
@@ -558,7 +548,8 @@ class Warmane(unittest.TestCase):
             try:
                 current_points = \
                     self.driver.find_element_by_class_name("myPoints")
-            except NoSuchElementException:
+            except NoSuchElementException or \
+                    TimeoutException:
                 self.driver.quit()
                 proxy = get_proxies()
                 self.setUp(proxy)
