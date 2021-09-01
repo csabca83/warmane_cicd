@@ -395,11 +395,6 @@ class Warmane(unittest.TestCase):
                         self.setUp(proxy)
                         self.captcha(n-1)
 
-        except TimeoutException:
-            proxy = get_proxies()
-            self.setUp(proxy)
-            self.captcha(n-1)
-
         except Exception:
             self.driver.quit()
             print(f"{n} retries left")
