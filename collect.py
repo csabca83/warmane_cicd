@@ -426,6 +426,9 @@ class Warmane(unittest.TestCase):
     def test_run(self):
         self.captcha(self.captcha_retries)
 
+        if self.captcha_retries <= 0:
+            raise Exception
+
         if self.cookie_worked is True:
             try:
                 self.driver.find_element_by_id(
