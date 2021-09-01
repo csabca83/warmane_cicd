@@ -19,6 +19,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import ElementClickInterceptedException
+from selenium.common.exceptions import TimeoutException
 
 
 # Randomization Related
@@ -395,6 +396,12 @@ class Warmane(unittest.TestCase):
                         proxy = get_proxies()
                         self.setUp(proxy)
                         self.captcha(n-1)
+
+        except TimeoutException:
+            proxy = get_proxies()
+            self.setUp(proxy)
+            self.captcha(n-1)
+
         except Exception:
             self.driver.quit()
             print(f"{n} retries left")
@@ -453,6 +460,16 @@ class Warmane(unittest.TestCase):
                         ).click()
                     intercept = False
 
+                except TimeoutException:
+                    intercept = False
+                    self.driver.quit()
+                    proxy = get_proxies()
+                    self.setUp(proxy)
+
+                    self.captcha_retries -= 1
+
+                    self.test_run()
+
                 except ElementClickInterceptedException:
                     print(
                         "Click interception happened retrying captcha."
@@ -461,8 +478,6 @@ class Warmane(unittest.TestCase):
 
                     proxy = get_proxies()
                     self.setUp(proxy)
-
-                    self.driver.get(self.startpage)
 
                     self.captcha_retries -= 1
                     self.captcha(self.captcha_retries)
@@ -487,6 +502,16 @@ class Warmane(unittest.TestCase):
                     "wm-ui-btn"
                     ).click()
                 print("Passed MFA successfully.")
+
+            except TimeoutException:
+                self.driver.quit()
+                proxy = get_proxies()
+                self.setUp(proxy)
+
+                self.captcha_retries -= 1
+
+                self.test_run()
+
             except NoSuchElementException:
                 print("MFA wasn't requested")
                 pass
@@ -517,10 +542,31 @@ class Warmane(unittest.TestCase):
                 self.log_list.append("------------------")
             # self.save_cookies()
             # print("Cookies were saved")
+
+        except TimeoutException:
+            self.driver.quit()
+            proxy = get_proxies()
+            self.setUp(proxy)
+
+            self.captcha_retries -= 1
+
+            self.test_run()
+
         except NoSuchElementException:
             print("Daily points were already collected")
             self.log_list.append("Daily points were already collected")
-            current_points = self.driver.find_element_by_class_name("myPoints")
+            try:
+                current_points = \
+                    self.driver.find_element_by_class_name("myPoints")
+            except NoSuchElementException:
+                self.driver.quit()
+                proxy = get_proxies()
+                self.setUp(proxy)
+
+                self.captcha_retries -= 1
+
+                self.test_run()
+
             self.log_list.append(
                 f"Your current points are: {current_points.text}"
                 )
