@@ -209,6 +209,33 @@ class Warmane(unittest.TestCase):
             for data in content.iter_content():
                 handle.write(data)
 
+    def something_went_wrong(self):
+        print("!!!Something went wrong!!!")
+        self.log_list = [
+                     ("Unsuccessful try, "
+                      "please try to run "
+                      "the script chmod +x"
+                      " geckodriver && "
+                      "python collect.py"
+                      " manually on"
+                      " https://dashboard.heroku.com/"
+                      "apps/warmane-app .")]
+        self.send_text_message(self.log_list)
+        self.driver.quit()
+        os._exit(os.EX_OK)
+
+    def recursive_retry(self):
+        self.driver.quit()
+        proxy = get_proxies()
+        self.setUp(proxy)
+
+        self.captcha_retries -= 1
+        print(
+            str(self.captcha_retries) +
+            " retries left"
+            )
+        self.test_run()
+
     def captcha(self, n):
 
         try:
@@ -431,11 +458,7 @@ class Warmane(unittest.TestCase):
                 raise Exception
 
         except Exception:
-            print("!!!Something went wrong!!!")
-            self.log_list.append("!!!Something went wrong!!!")
-            self.send_text_message(self.log_list)
-            self.driver.quit()
-            os._exit(os.EX_OK)
+            self.something_went_wrong()
 
         if self.cookie_worked is True:
             try:
@@ -504,16 +527,7 @@ class Warmane(unittest.TestCase):
                 print("Passed MFA successfully.")
 
             except TimeoutException:
-                self.driver.quit()
-                proxy = get_proxies()
-                self.setUp(proxy)
-
-                self.captcha_retries -= 1
-                print(
-                    str(self.captcha_retries) +
-                    " retries left"
-                    )
-                self.test_run()
+                self.recursive_retry()
 
             except NoSuchElementException:
                 print("MFA wasn't requested")
@@ -547,16 +561,7 @@ class Warmane(unittest.TestCase):
             # print("Cookies were saved")
 
         except TimeoutException:
-            self.driver.quit()
-            proxy = get_proxies()
-            self.setUp(proxy)
-
-            self.captcha_retries -= 1
-            print(
-                str(self.captcha_retries) +
-                " retries left"
-                )
-            self.test_run()
+            self.recursive_retry()
 
         except NoSuchElementException:
             print("Daily points were already collected")
@@ -566,16 +571,7 @@ class Warmane(unittest.TestCase):
                     self.driver.find_element_by_class_name("myPoints")
             except NoSuchElementException or \
                     TimeoutException:
-                self.driver.quit()
-                proxy = get_proxies()
-                self.setUp(proxy)
-
-                self.captcha_retries -= 1
-                print(
-                    str(self.captcha_retries) +
-                    " retries left"
-                    )
-                self.test_run()
+                self.recursive_retry()
 
             self.log_list.append(
                 f"Your current points are: {current_points.text}"
@@ -586,11 +582,7 @@ class Warmane(unittest.TestCase):
             self.driver.quit()
 
         except Exception:
-            print("!!!Something went wrong!!!")
-            self.log_list.append("!!!Something went wrong!!!")
-            self.send_text_message(self.log_list)
-            self.driver.quit()
-            os._exit(os.EX_OK)
+            self.something_went_wrong()
 
         print("Successful script run")
         self.log_list.append("Successful script run")
