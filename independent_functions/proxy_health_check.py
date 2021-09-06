@@ -4,6 +4,8 @@ from datetime import datetime
 
 def proxy_health_check(proxy):
 
+    tbr = False
+
     proxies = {
         "http": f'socks4://{proxy}',
         "https": f'socks4://{proxy}'
@@ -25,7 +27,6 @@ def proxy_health_check(proxy):
             prepped,
             timeout=5
             )
-        s.close()
         end = datetime.now()
         time_result = str(end - start)
 
@@ -34,19 +35,22 @@ def proxy_health_check(proxy):
                 '{: <20}{: <9}{: <15}{: <14}'.format(
                     proxy, 'HEALTHY', '200', time_result)
                     )
-            return proxy
+            tbr = proxy
 
         else:
-            return False
+            pass
 
-    except requests.exceptions.ConnectTimeout:
+    except requests.exceptions.ConnectTimeout or \
+            requests.exceptions.ConnectionError or \
+            requests.exceptions.ReadTimeout:
 
-        return False
+        pass
 
-    except requests.exceptions.ConnectionError:
+    finally:
 
-        return False
+        try:
+            s.close()
+        except Exception:
+            pass
 
-    except requests.exceptions.ReadTimeout:
-
-        return False
+        return tbr
