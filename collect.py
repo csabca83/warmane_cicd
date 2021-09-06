@@ -426,8 +426,16 @@ class Warmane(unittest.TestCase):
     def test_run(self):
         self.captcha(self.captcha_retries)
 
-        if self.captcha_retries <= 0:
-            raise Exception
+        try:
+            if self.captcha_retries <= 0:
+                raise Exception
+
+        except Exception:
+            print("!!!Something went wrong!!!")
+            self.log_list.append("!!!Something went wrong!!!")
+            self.send_text_message(self.log_list)
+            self.driver.quit()
+            os._exit(os.EX_OK)
 
         if self.cookie_worked is True:
             try:
@@ -468,6 +476,10 @@ class Warmane(unittest.TestCase):
                     self.setUp(proxy)
 
                     self.captcha_retries -= 1
+                    print(
+                        str(self.captcha_retries) +
+                        " retries left"
+                        )
                     self.captcha(self.captcha_retries)
 
                     intercept = True
@@ -497,7 +509,10 @@ class Warmane(unittest.TestCase):
                 self.setUp(proxy)
 
                 self.captcha_retries -= 1
-
+                print(
+                    str(self.captcha_retries) +
+                    " retries left"
+                    )
                 self.test_run()
 
             except NoSuchElementException:
@@ -537,7 +552,10 @@ class Warmane(unittest.TestCase):
             self.setUp(proxy)
 
             self.captcha_retries -= 1
-
+            print(
+                str(self.captcha_retries) +
+                " retries left"
+                )
             self.test_run()
 
         except NoSuchElementException:
@@ -553,7 +571,10 @@ class Warmane(unittest.TestCase):
                 self.setUp(proxy)
 
                 self.captcha_retries -= 1
-
+                print(
+                    str(self.captcha_retries) +
+                    " retries left"
+                    )
                 self.test_run()
 
             self.log_list.append(
