@@ -86,7 +86,11 @@ class Warmane(unittest.TestCase):
 
             # Splitting the proxy because the port
             # needs to be an integer
-            proxy, proxy_port = proxy.split(":")
+            try:
+                proxy, proxy_port = proxy.split(":")
+            except AttributeError:
+                self.test_run()
+
             self.options.set_preference(
                 'network.proxy.type', 1
                 )  # int
