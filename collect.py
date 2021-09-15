@@ -476,43 +476,32 @@ class Warmane(unittest.TestCase):
                 print("MFA wasn't requested")
                 pass
         else:
-            intercept = True
-            while intercept is True:
-                try:
-                    self.driver.switch_to.default_content()
-                    self.driver.find_element_by_id(
-                        "userID"
-                        ).send_keys(self.warmane_acc)
-                    self.driver.find_element_by_id(
-                        "userPW"
-                        ).send_keys(self.warmane_pass)
-                    self.driver.find_element_by_xpath(
-                        "//button[@type='submit']"
-                        ).click()
-                    intercept = False
+            try:
+                self.driver.switch_to.default_content()
+                self.driver.find_element_by_id(
+                    "userID"
+                    ).send_keys(self.warmane_acc)
+                self.driver.find_element_by_id(
+                    "userPW"
+                    ).send_keys(self.warmane_pass)
+                self.driver.find_element_by_xpath(
+                    "//button[@type='submit']"
+                    ).click()
 
-                except ElementClickInterceptedException or \
-                        TimeoutException:
-                    print(
-                        "Click/Timeout interception"
-                        " happened retrying captcha."
-                        )
-                    self.driver.quit()
+            except ElementClickInterceptedException or \
+                    TimeoutException or \
+                    Exception:
+                print(
+                    "Click/Timeout interception"
+                    " happened retrying captcha."
+                    )
+                self.recursive_retry()
 
-                    proxy = get_proxies()
-                    self.setUp(proxy)
-
-                    self.captcha_retries -= 1
-                    print(
-                        str(self.captcha_retries) +
-                        " retries left"
-                        )
-                    self.captcha(self.captcha_retries)
-
-                    intercept = True
-
-                except Exception:
-                    intercept = True
+            except Exception as e:
+                print(
+                    "The following random"
+                    f" exception has happened:{e}")
+                self.recursive_retry()
 
             print(
                 "Added UserID and Password and clicked on login"
