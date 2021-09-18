@@ -564,6 +564,7 @@ class Warmane(unittest.TestCase):
                     self.driver.find_element_by_class_name("myPoints")
             except NoSuchElementException or \
                     TimeoutException:
+                self.log_list = []
                 self.recursive_retry()
 
             self.log_list.append(
