@@ -572,7 +572,10 @@ class Warmane(unittest.TestCase):
             self.log_list.append("------------------")
             # self.save_cookies()
             # print("Cookies were saved")
-            self.driver.quit()
+            try:
+                self.driver.quit() or self.driver.close()
+            except Exception:
+                pass
 
         except Exception:
             self.something_went_wrong()
@@ -581,7 +584,10 @@ class Warmane(unittest.TestCase):
         self.log_list.append("Successful script run")
         self.send_text_message(self.log_list)
 
-        self.driver.quit()
+        try:
+            self.driver.quit() or self.driver.close()
+        except Exception:
+            pass
 
     def tearDown(self):
         wait_between(10.13, 15.05)
