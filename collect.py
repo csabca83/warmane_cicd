@@ -229,6 +229,7 @@ class Warmane(unittest.TestCase):
         os._exit(os.EX_OK)
 
     def recursive_retry(self):
+        self.driver.close()
         self.driver.quit()
         proxy = get_proxies()
         self.setUp(proxy)
@@ -427,6 +428,7 @@ class Warmane(unittest.TestCase):
                         self.captcha(n-1)
 
         except Exception:
+            self.driver.close()
             self.driver.quit()
             print(f"{n} retries left")
 
@@ -574,6 +576,7 @@ class Warmane(unittest.TestCase):
             # self.save_cookies()
             # print("Cookies were saved")
             try:
+                self.driver.close()
                 self.driver.quit()
             except Exception:
                 pass
@@ -586,6 +589,7 @@ class Warmane(unittest.TestCase):
         self.send_text_message(self.log_list)
 
         try:
+            self.driver.close()
             self.driver.quit()
         except Exception:
             pass
