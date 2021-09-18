@@ -573,7 +573,7 @@ class Warmane(unittest.TestCase):
             # self.save_cookies()
             # print("Cookies were saved")
             try:
-                self.driver.quit() or self.driver.close()
+                self.driver.quit()
             except Exception:
                 pass
 
@@ -585,7 +585,7 @@ class Warmane(unittest.TestCase):
         self.send_text_message(self.log_list)
 
         try:
-            self.driver.quit() or self.driver.close()
+            self.driver.quit()
         except Exception:
             pass
 
@@ -598,6 +598,9 @@ if __name__ == "__main__":
 
     if len(response) != 0:
         Warmane().send_text_message(response)
-        Warmane().driver.quit()
+        try:
+            Warmane().driver.quit()
+        except Exception:
+            pass
     else:
         pass
