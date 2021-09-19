@@ -251,7 +251,8 @@ class Warmane(unittest.TestCase):
                 sleep(2)
                 self.driver.find_element_by_class_name("navigation-logo")
                 self.driver.refresh()
-            except Exception:
+            except Exception as e:
+                print(e)
                 self.driver.quit()
                 print(f"{n} retries left")
 
@@ -393,12 +394,13 @@ class Warmane(unittest.TestCase):
                                     print("Recaptcha solved")
                                     audioBtnFound = False
 
-                    except Exception:
+                    except Exception as e:
+                        print(e)
                         print('Recaptcha temporarily banned your IP')
                         try:
                             self.driver.quit()
-                        except Exception:
-                            pass
+                        except Exception as e:
+                            print(e)
                         print("Driver Closed")
                         print(f"{str(n)} retries left")
                         if n == 0 or n < 0:
@@ -431,10 +433,14 @@ class Warmane(unittest.TestCase):
                         self.setUp(proxy)
                         self.captcha(n-1)
 
-        except Exception:
-            self.driver.close()
-            self.driver.quit()
-            print(f"{n} retries left")
+        except Exception as e:
+            print(e)
+            try:
+                self.driver.close()
+                self.driver.quit()
+                print(f"{str(n)} retries left")
+            except Exception as e:
+                print(e)
 
             if n == 0 or n < 0:
                 print("Unsuccessful tries")
@@ -496,7 +502,8 @@ class Warmane(unittest.TestCase):
 
             except ElementClickInterceptedException or \
                     TimeoutException or \
-                    Exception:
+                    Exception as e:
+                print(e)
                 print(
                     "Click/Timeout interception"
                     " happened retrying captcha."
