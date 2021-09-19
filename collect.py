@@ -20,6 +20,7 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import ElementClickInterceptedException
 from selenium.common.exceptions import TimeoutException
+from urllib3.exceptions import MaxRetryError
 
 
 # Randomization Related
@@ -519,7 +520,10 @@ class Warmane(unittest.TestCase):
             print(
                 "Added UserID and Password and clicked on login"
                 )
-            self.driver.implicitly_wait(10)
+            try:
+                self.driver.implicitly_wait(10)
+            except MaxRetryError as e:
+                print(e)
 
             ##############################
             try:
@@ -538,8 +542,10 @@ class Warmane(unittest.TestCase):
             except NoSuchElementException:
                 print("MFA wasn't requested")
                 pass
-
-        self.driver.implicitly_wait(10)
+        try:
+            self.driver.implicitly_wait(10)
+        except MaxRetryError as e:
+            print(e)
 
         try:
             points_before = self.driver.find_element_by_class_name("myPoints")
