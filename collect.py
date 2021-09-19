@@ -569,6 +569,10 @@ class Warmane(unittest.TestCase):
                     f"Your current points are: {current_points.text}"
                     )
                 self.log_list.append("------------------")
+                try:
+                    self.driver.quit()
+                except Exception:
+                    pass
             # self.save_cookies()
             # print("Cookies were saved")
 
@@ -593,7 +597,6 @@ class Warmane(unittest.TestCase):
             # self.save_cookies()
             # print("Cookies were saved")
             try:
-                self.driver.close()
                 self.driver.quit()
             except Exception:
                 pass
@@ -608,8 +611,8 @@ class Warmane(unittest.TestCase):
         try:
             self.driver.close()
             self.driver.quit()
-        except Exception:
-            pass
+        except Exception as e:
+            print(e)
 
     def tearDown(self):
         wait_between(10.13, 15.05)
@@ -622,7 +625,7 @@ if __name__ == "__main__":
         Warmane().send_text_message(response)
         try:
             Warmane().driver.quit()
-        except Exception:
-            pass
+        except Exception as e:
+            print(e)
     else:
         pass
