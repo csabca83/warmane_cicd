@@ -229,16 +229,17 @@ class Warmane(unittest.TestCase):
         os._exit(os.EX_OK)
 
     def recursive_retry(self):
-        self.driver.close()
-        self.driver.quit()
-        proxy = get_proxies()
-        self.setUp(proxy)
-
         self.captcha_retries -= 1
         print(
             str(self.captcha_retries) +
             " retries left"
             )
+
+        self.driver.close()
+        self.driver.quit()
+        proxy = get_proxies()
+        self.setUp(proxy)
+
         self.test_run()
 
     def captcha(self, n):
@@ -394,9 +395,12 @@ class Warmane(unittest.TestCase):
 
                     except Exception:
                         print('Recaptcha temporarily banned your IP')
-                        self.driver.quit()
+                        try:
+                            self.driver.quit()
+                        except Exception:
+                            pass
                         print("Driver Closed")
-                        print(f"{n} retries left")
+                        print(f"{str(n)} retries left")
                         if n == 0 or n < 0:
                             print("Unsuccessful tries")
                             os._exit(os.EX_OK)
