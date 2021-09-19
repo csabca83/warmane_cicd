@@ -16,7 +16,7 @@ def get_proxies():
                "&"
                "protocol=socks4"
                "&"
-               "timeout=1000"
+               "timeout=200"
                "&"
                "country=all"
                "&"
@@ -28,7 +28,7 @@ def get_proxies():
 
         proxies = (resp.text).splitlines()
         random.shuffle(proxies)
-        pool_number = 1000
+        pool_number = len(proxies)
         healthy_proxies = []
         print(
             '{: <20}{: <9}{: <15}{: <14}'.format(
