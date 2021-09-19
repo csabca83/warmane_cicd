@@ -28,7 +28,7 @@ def get_proxies():
 
         proxies = (resp.text).splitlines()
         random.shuffle(proxies)
-        pool_number = len(proxies)
+        pool_number = 1000
         healthy_proxies = []
         print(
             '{: <20}{: <9}{: <15}{: <14}'.format(
