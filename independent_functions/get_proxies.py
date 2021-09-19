@@ -56,6 +56,7 @@ def get_proxies():
 
         return healthy_proxies
 
-    except Exception:
+    except Exception as e:
+        print(e)
         sleep(5)
         get_proxies()
