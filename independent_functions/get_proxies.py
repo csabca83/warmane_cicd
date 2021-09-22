@@ -16,7 +16,7 @@ def get_proxies():
                "&"
                "protocol=socks4"
                "&"
-               "timeout=200"
+               "timeout=100"
                "&"
                "country=all"
                "&"
